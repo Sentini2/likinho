@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LiKinho KeyAuth Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --bg: #0a0b0f;
+      --card: #12131a;
+      --card2: #181922;
+      --accent: #ff8c00;
+      --accent2: #ff6a00;
+      --text: #e8e8e8;
+      --text2: #8a8a9a;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --blue: #3b82f6;
+      --border: #222233
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 220px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      z-index: 10
+    }
+
+    .logo {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .logo i {
+      color: var(--accent);
+      font-size: 22px
+    }
+
+    .logo span {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text)
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: .2s;
+      font-size: 14px;
+      border-left: 3px solid transparent
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 140, 0, .06);
+      color: var(--text)
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(255, 140, 0, .08)
+    }
+
+    .nav-item i {
+      width: 18px;
+      text-align: center
+    }
+
+    .main {
+      margin-left: 220px;
+      padding: 28px 32px;
+      min-height: 100vh
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700
+    }
+
+    .header h1 i {
+      color: var(--accent);
+      margin-right: 8px
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: .3s
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px)
+    }
+
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 4px
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700
+    }
+
+    .stat-card .icon {
+      float: right;
+      font-size: 20px;
+      opacity: .4;
+      margin-top: -32px
+    }
+
+    .stat-card.green .value {
+      color: var(--green)
+    }
+
+    .stat-card.orange .value {
+      color: var(--accent)
+    }
+
+    .stat-card.red .value {
+      color: var(--red)
+    }
+
+    .stat-card.blue .value {
+      color: var(--blue)
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .section-title i {
+      color: var(--accent)
+    }
+
+    .gen-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .gen-row label {
+      font-size: 13px;
+      color: var(--text2)
+    }
+
+    input,
+    select {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: .2s
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent)
+    }
+
+    input[type=number] {
+      width: 80px
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      transition: .2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(255, 140, 0, .3)
+    }
+
+    .btn.sm {
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 6px
+    }
+
+    .btn.red {
+      background: linear-gradient(135deg, #ef4444, #dc2626)
+    }
+
+    .btn.green {
+      background: linear-gradient(135deg, #22c55e, #16a34a)
+    }
+
+    .btn.gray {
+      background: #333;
+      color: #aaa
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      color: var(--text2);
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .5px
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, .04)
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block
+    }
+
+    .badge.active {
+      background: rgba(34, 197, 94, .15);
+      color: var(--green)
+    }
+
+    .badge.unused {
+      background: rgba(59, 130, 246, .15);
+      color: var(--blue)
+    }
+
+    .badge.banned {
+      background: rgba(239, 68, 68, .15);
+      color: var(--red)
+    }
+
+    .badge.disabled {
+      background: rgba(234, 179, 8, .15);
+      color: var(--yellow)
+    }
+
+    .badge.paused {
+      background: rgba(234, 179, 8, .15);
+      color: var(--yellow)
+    }
+
+    .badge.expired {
+      background: rgba(107, 114, 128, .15);
+      color: #6b7280
+    }
+
+    .badge.online {
+      background: rgba(34, 197, 94, .15);
+      color: var(--green)
+    }
+
+    .key-code {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      background: rgba(255, 140, 0, .08);
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer
+    }
+
+    .key-code:hover {
+      background: rgba(255, 140, 0, .15)
+    }
+
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .7);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-bg.show {
+      display: flex
+    }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      width: 420px;
+      max-width: 90vw
+    }
+
+    .modal h3 {
+      margin-bottom: 16px;
+      font-size: 18px
+    }
+
+    .modal textarea {
+      width: 100%;
+      background: var(--card2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      outline: none
+    }
+
+    .modal textarea:focus {
+      border-color: var(--accent)
+    }
+
+    .modal .actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--card2);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 200;
+      animation: slideUp .3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1
+      }
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      margin-right: 6px;
+      animation: pulse 2s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    .gen-keys-output {
+      margin-top: 12px;
+      background: var(--card2);
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      display: none
+    }
+
+    /* Unified Screenshot Modal */
+    .img-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .img-modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 1000px;
+      overflow: hidden;
+      animation: modalSlideUp 0.3s ease;
+    }
+
+    .img-modal-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card2);
+    }
+
+    .img-modal-header .close-modal {
+      cursor: pointer;
+      opacity: 0.7;
+      transition: 0.2s;
+    }
+
+    .img-modal-header .close-modal:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    #modal-img {
+      width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
+    @keyframes modalSlideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="logo"><img src="logo.png" alt="LiKinho"
+        style="height:28px;vertical-align:middle;margin-right:8px"><span>LiKinho</span></div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><i class="fas fa-chart-bar"></i>Dashboard</div>
+    <div class="nav-item" onclick="showPage('keys')"><i class="fas fa-key"></i>Keys</div>
+    <div class="nav-item" onclick="showPage('keys-menu')"><i class="fas fa-list"></i>Keys Menu</div>
+    <div class="nav-item" onclick="showPage('users')"><i class="fas fa-users"></i>Users</div>
+    <div class="nav-item" onclick="showPage('online')"><i class="fas fa-signal"></i>Online</div>
+    <div class="nav-item" onclick="showPage('hwid')"><i class="fas fa-microchip"></i>HWID</div>
+    <div class="nav-item" onclick="showPage('chat')"><i class="fas fa-comments"></i>Chat Infos</div>
+    <div class="nav-item" onclick="showPage('tickets')"><i class="fas fa-ticket-alt"></i>Tickets</div>
+    <div class="nav-item" onclick="showPage('block')"><i class="fas fa-shield-alt"></i>Block Inject</div>
+  </div>
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="header">
+        <h1><i class="fas fa-chart-bar"></i>Dashboard</h1>
+      </div>
+      <div class="stats">
+        <div class="stat-card orange">
+          <div class="label">Total Keys</div>
+          <div class="value" id="s-total">0</div>
+          <div class="icon"><i class="fas fa-key"></i></div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">Active Keys</div>
+          <div class="value" id="s-active">0</div>
+          <div class="icon"><i class="fas fa-check"></i></div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Total Users</div>
+          <div class="value" id="s-users">0</div>
+          <div class="icon"><i class="fas fa-users"></i></div>
+        </div>
+        <div class="stat-card red">
+          <div class="label">Online Now</div>
+          <div class="value" id="s-online">0</div>
+          <div class="icon"><i class="fas fa-signal"></i></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title"><i class="fas fa-key"></i>Quick Generate</div>
+        <div class="gen-row">
+          <label>Days:</label><input type="number" id="qg-days" value="30" min="1">
+          <label>Count:</label><input type="number" id="qg-count" value="1" min="1" max="50">
+          <button class="btn" onclick="generateKeys('qg')"><i class="fas fa-plus"></i>Generate</button>
+        </div>
+        <div class="gen-keys-output" id="qg-output"></div>
+      </div>
+    </div>
+
+    <!-- KEYS -->
+    <div class="page" id="page-keys">
+      <div class="header">
+        <h1><i class="fas fa-key"></i>Keys</h1>
+      </div>
+      <div class="section">
+        <div class="section-title"><i class="fas fa-plus"></i>Generate Keys</div>
+        <div class="gen-row">
+          <label>Days:</label><input type="number" id="kg-days" value="30" min="1">
+          <label>Count:</label><input type="number" id="kg-count" value="1" min="1" max="50">
+          <button class="btn" onclick="generateKeys('kg')"><i class="fas fa-plus"></i>Generate</button>
+        </div>
+        <div class="gen-keys-output" id="kg-output"></div>
+      </div>
+      <div class="section">
+        <div class="section-title"><i class="fas fa-list"></i>All Keys</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Status</th>
+              <th>Days</th>
+              <th>Used By</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="keys-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- KEYS MENU -->
+    <div class="page" id="page-keys-menu">
+      <div class="header">
+        <h1><i class="fas fa-list"></i>Keys Menu</h1>
+      </div>
+      <div class="section">
+        <div class="section-title"><i class="fas fa-plus"></i>Generate Menu Keys</div>
+        <div class="gen-row">
+          <label>Days:</label><input type="number" id="km-days" value="30" min="1">
+          <label>Count:</label><input type="number" id="km-count" value="1" min="1" max="50">
+          <button class="btn" onclick="generateMenuKeys()"><i class="fas fa-plus"></i>Generate</button>
+        </div>
+        <div class="gen-keys-output" id="km-output"></div>
+      </div>
+      <div class="section">
+        <div class="section-title"><i class="fas fa-list"></i>All Menu Keys</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Status</th>
+              <th>Days</th>
+              <th>Used By</th>
+              <th>Expires</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="keys-menu-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HWID & SECURITY -->
+    <div class="page" id="page-hwid">
+      <div class="header" style="justify-content:space-between">
+        <h1><i class="fas fa-microchip"></i>HWID & Security</h1>
+        <div style="display:flex;gap:10px">
+          <button class="btn" onclick="toggleSuspicious(false)" id="btn-hwid-list" style="background:var(--accent)">HWID
+            List</button>
+          <button class="btn" onclick="toggleSuspicious(true)" id="btn-suspicious-list"
+            style="background:var(--card2)">Suspicious Activity</button>
+        </div>
+      </div>
+
+      <!-- HWID LIST -->
+      <div id="section-hwid-list">
+        <div class="section" style="margin-bottom:16px;display:flex;align-items:center;gap:16px;padding:14px 20px">
+          <span style="font-weight:600;font-size:14px"><i class="fas fa-cog"
+              style="color:var(--accent);margin-right:6px"></i>Security Systems:</span>
+          <button class="btn" id="btn-toggle-hwid" onclick="toggleHWIDSystem()" style="font-size:12px"><i
+              class="fas fa-microchip"></i> HWID: ON</button>
+          <button class="btn" id="btn-toggle-ip" onclick="toggleIPSystem()" style="font-size:12px"><i
+              class="fas fa-globe"></i> IP Lock: ON</button>
+        </div>
+        <div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+          <div class="stat-card blue">
+            <div class="label">Total HWIDs</div>
+            <div class="value" id="h-total">0</div>
+            <div class="icon"><i class="fas fa-microchip"></i></div>
+          </div>
+          <div class="stat-card green">
+            <div class="label">Locked</div>
+            <div class="value" id="h-locked">0</div>
+            <div class="icon"><i class="fas fa-lock"></i></div>
+          </div>
+          <div class="stat-card red">
+            <div class="label">Blacklisted</div>
+            <div class="value" id="h-blacklisted">0</div>
+            <div class="icon"><i class="fas fa-ban"></i></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><i class="fas fa-list"></i>Registered HWIDs & IPs</div>
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>HWID (Hash)</th>
+                <th>Registered IP</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="hwid-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUSPICIOUS ACTIVITY -->
+      <div id="section-suspicious-list" style="display:none">
+        <div class="stats" style="grid-template-columns: repeat(1, 1fr); margin-bottom: 20px;">
+          <div class="stat-card red">
+            <div class="label">Total Detections</div>
+            <div class="value" id="s-detections">0</div>
+            <div class="icon"><i class="fas fa-shield-alt"></i></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><i class="fas fa-user-secret"></i>Suspicious Activities</div>
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Threat Type</th>
+                <th>Process</th>
+                <th>Time</th>
+                <th>Screenshot</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="suspicious-list"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- USERS -->
+    <div class="page" id="page-users">
+      <div class="header">
+        <h1><i class="fas fa-users"></i>Users</h1>
+      </div>
+      <div class="section">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Key</th>
+              <th>Status</th>
+              <th>Days</th>
+              <th>Created</th>
+              <th>Last Login</th>
+            </tr>
+          </thead>
+          <tbody id="users-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ONLINE -->
+    <div class="page" id="page-online">
+      <div class="header">
+        <h1><i class="fas fa-signal"></i>Online Users</h1><span id="online-count"
+          style="color:var(--green);font-size:14px"></span>
+      </div>
+      <div class="section">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>IP</th>
+              <th>Session Start</th>
+              <th>Last Ping</th>
+            </tr>
+          </thead>
+          <tbody id="online-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CHAT INFOS -->
+    <div class="page" id="page-chat">
+      <div class="header">
+        <h1><i class="fas fa-comments"></i>Chat Infos</h1>
+        <div style="display:flex;gap:10px">
+          <button class="btn" id="btn-chat-lock" onclick="toggleChatLock()"><i class="fas fa-lock"></i>Lock
+            Chat</button>
+          <button class="btn red" onclick="clearChat()"><i class="fas fa-trash"></i>Clear Chat</button>
+        </div>
+      </div>
+      <div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+        <div class="stat-card orange">
+          <div class="label">Total Messages</div>
+          <div class="value" id="chat-msg-count">0</div>
+          <div class="icon"><i class="fas fa-comment"></i></div>
+        </div>
+        <div class="stat-card blue">
+          <div class="label">Chat Status</div>
+          <div class="value" id="chat-status-label" style="font-size:18px">Open</div>
+          <div class="icon"><i class="fas fa-lock-open"></i></div>
+        </div>
+        <div class="stat-card green">
+          <div class="label">Online Users</div>
+          <div class="value" id="chat-online">0</div>
+          <div class="icon"><i class="fas fa-users"></i></div>
+        </div>
+      </div>
+      <div class="section" style="display:flex;flex-direction:column;height:calc(100vh - 280px)">
+        <div class="section-title"><i class="fas fa-comments"></i>Live Chat</div>
+        <div id="chat-messages"
+          style="flex:1;overflow-y:auto;background:var(--card2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.8">
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="admin-chat-input" placeholder="Send as LiKinho Admin..."
+            style="flex:1;padding:10px 14px" onkeydown="if(event.key==='Enter')adminSendChat()">
+          <button class="btn" onclick="adminSendChat()"><i class="fas fa-paper-plane"></i>Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TICKETS -->
+    <div class="page" id="page-tickets">
+      <div class="header">
+        <h1><i class="fas fa-ticket-alt"></i>Tickets</h1>
+        <span id="tickets-count" style="color:var(--accent);font-size:14px"></span>
+      </div>
+      <div id="tickets-list-view">
+        <div class="stats" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+          <div class="stat-card orange">
+            <div class="label">Total Tickets</div>
+            <div class="value" id="t-total">0</div>
+            <div class="icon"><i class="fas fa-ticket-alt"></i></div>
+          </div>
+          <div class="stat-card green">
+            <div class="label">Open</div>
+            <div class="value" id="t-open">0</div>
+            <div class="icon"><i class="fas fa-envelope-open"></i></div>
+          </div>
+          <div class="stat-card red">
+            <div class="label">Closed</div>
+            <div class="value" id="t-closed">0</div>
+            <div class="icon"><i class="fas fa-envelope"></i></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title"><i class="fas fa-list"></i>All Tickets</div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Subject</th>
+                <th>Messages</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tickets-table"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="ticket-detail-view" style="display:none">
+        <button class="btn" onclick="backToTickets()" style="margin-bottom:16px"><i class="fas fa-arrow-left"></i>
+          Back</button>
+        <div class="section" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div id="td-subject" style="font-size:18px;font-weight:700"></div>
+              <div id="td-user" style="font-size:13px;color:var(--text2)"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn red" id="td-close-btn" onclick="closeTicket()"><i class="fas fa-times"></i>
+                Close</button>
+              <button class="btn green" id="td-reopen-btn" onclick="reopenTicket()" style="display:none"><i
+                  class="fas fa-redo"></i> Reopen</button>
+            </div>
+          </div>
+        </div>
+        <div class="section" style="display:flex;flex-direction:column;height:calc(100vh - 320px)">
+          <div id="td-messages"
+            style="flex:1;overflow-y:auto;background:var(--card2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.8">
+          </div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="td-reply-input" placeholder="Reply as Admin..." style="flex:1;padding:10px 14px"
+              onkeydown="if(event.key==='Enter')replyTicket()">
+            <button class="btn" onclick="replyTicket()"><i class="fas fa-paper-plane"></i>Reply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCK INJECT -->
+    <div class="page" id="page-block">
+      <div class="header">
+        <h1><i class="fas fa-shield-alt"></i>Block Inject</h1>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><i class="fas fa-info-circle"></i>Inject Control</div>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:20px">When enabled, users will not be able to inject.
+          The inject button will show an error animation and display "Searching for future updates" message.</p>
+
+        <div
+          style="display:flex;align-items:center;gap:20px;padding:20px;background:var(--card2);border-radius:12px;margin-bottom:20px">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:16px;margin-bottom:8px">Block Inject Status</div>
+            <div style="color:var(--text2);font-size:13px">Current state: <span id="block-status"
+                style="font-weight:600">Disabled</span></div>
+          </div>
+          <button class="btn" id="btn-toggle-block" onclick="toggleBlockInject()"
+            style="font-size:14px;padding:12px 24px">
+            <i class="fas fa-power-off"></i> Enable Block
+          </button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+          <div class="stat-card" style="border:2px solid var(--green)">
+            <div class="label" style="font-weight:600;color:var(--green)">Normal Mode</div>
+            <div style="margin:12px 0">
+              <i class="fas fa-check-circle"
+                style="font-size:24px;color:var(--green);margin-bottom:8px;display:block"></i>
+              <div style="font-size:12px;color:var(--text2)">Users can inject normally</div>
+              <div style="font-size:12px;color:var(--text2)">Green success animation</div>
+              <div style="font-size:12px;color:var(--text2)">"Inject successful" message</div>
+            </div>
+          </div>
+
+          <div class="stat-card" style="border:2px solid var(--red)">
+            <div class="label" style="font-weight:600;color:var(--red)">Blocked Mode</div>
+            <div style="margin:12px 0">
+              <i class="fas fa-times-circle"
+                style="font-size:24px;color:var(--red);margin-bottom:8px;display:block"></i>
+              <div style="font-size:12px;color:var(--text2)">Users cannot inject</div>
+              <div style="font-size:12px;color:var(--text2)">Red error animation</div>
+              <div style="font-size:12px;color:var(--text2)">"Searching for future updates"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><i class="fas fa-cog"></i>How It Works</div>
+        <div style="background:var(--card2);padding:16px;border-radius:8px">
+          <div style="margin-bottom:12px"><strong>When Block Inject is ENABLED:</strong></div>
+          <ul style="color:var(--text2);font-size:13px;margin-left:20px;margin-bottom:16px">
+            <li>Client checks server status before inject</li>
+            <li>If blocked, inject button shows red X animation</li>
+            <li>Display message: "Searching for future updates"</li>
+            <li>No actual injection occurs</li>
+          </ul>
+
+          <div style="margin-bottom:12px"><strong>When Block Inject is DISABLED:</strong></div>
+          <ul style="color:var(--text2);font-size:13px;margin-left:20px">
+            <li>Normal injection process</li>
+            <li>Green success animation</li>
+            <li>Regular inject functionality</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ban Modal -->
+    <div class="modal-bg" id="ban-modal">
+      <div class="modal">
+        <h3><i class="fas fa-ban" style="color:var(--red);margin-right:8px"></i>Ban Key</h3>
+        <p style="color:var(--text2);font-size:13px;margin-bottom:12px">Enter the message the user will see:</p>
+        <textarea id="ban-message" placeholder="Your key has been banned for violating terms of service..."></textarea>
+        <div class="actions">
+          <button class="btn gray" onclick="closeBanModal()">Cancel</button>
+          <button class="btn red" onclick="confirmBan()"><i class="fas fa-ban"></i>Ban</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API = '';
+      const TOKEN = 'likinho-admin-2024';
+      const headers = { 'Content-Type': 'application/json', 'x-admin-token': TOKEN };
+
+      async function api(method, url, body) {
+        const opts = { method, headers };
+        if (body) opts.body = JSON.stringify(body);
+        const r = await fetch(API + url, opts);
+        return r.json();
+      }
+
+      function toast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast'; t.innerHTML = `<i class="fas fa-check-circle" style="color:var(--accent)"></i>${msg}`;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+      }
+
+      function showPage(name) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + name).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        event.target.closest('.nav-item').classList.add('active');
+        if (name === 'dashboard') loadStats();
+        if (name === 'keys') loadKeys();
+        if (name === 'keys-menu') loadMenuKeys();
+        if (name === 'users') loadUsers();
+        if (name === 'online') loadOnline();
+        if (name === 'hwid') loadHWID();
+        if (name === 'chat') { loadChatMessages(); loadChatStatus(); }
+        if (name === 'tickets') loadTickets();
+        if (name === 'block') loadBlockInject();
+      }
+
+      async function loadStats() {
+        const d = await api('GET', '/api/admin/stats');
+        if (!d.success) return;
+        document.getElementById('s-total').textContent = d.totalKeys;
+        document.getElementById('s-active').textContent = d.activeKeys;
+        document.getElementById('s-users').textContent = d.totalUsers;
+        document.getElementById('s-online').textContent = d.online;
+      }
+
+      async function loadSuspicious() {
+        const res = await api('GET', '/api/admin/suspicious/list');
+        if (!res.success) return;
+        document.getElementById('s-detections').innerText = res.total;
+        const tbody = document.getElementById('suspicious-list');
+        tbody.innerHTML = '';
+        res.activities.forEach(a => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+                  <td>
+                      <div style="font-weight:600">${a.username}</div>
+                      <div style="font-size:11px;color:var(--text2)">IP: ${a.ip}</div>
+                  </td>
+                  <td><span class="badge banned">${a.threat_type}</span></td>
+                  <td>${a.process_name}</td>
+                  <td>${new Date(a.detected_at).toLocaleString()}</td>
+                  <td>
+                      ${(a.screenshot_url || a.screenshot_base64) ? `<button class="btn" style="padding:4px 8px;font-size:11px" onclick="showImage('${a.screenshot_url || a.screenshot_base64}')">View</button>` : 'No Image'}
+                  </td>
+                  <td>
+                      <button class="btn" style="padding:4px 8px;font-size:11px;background:var(--red)" onclick="deleteSuspicious(${a.id})">Delete</button>
+                  </td>
+              `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function showImage(src) {
+        if (!src || src === 'null') return;
+        const modal = document.getElementById('img-modal');
+        const img = document.getElementById('modal-img');
+
+        // Clear previous image
+        img.src = '';
+        img.style.display = 'block';
+
+        const timestamp = new Date().getTime();
+        let finalSrc = src;
+
+        if (src.startsWith('/screenshots/') || src.startsWith('http')) {
+          // Add timestamp for cache busting
+          finalSrc = src.includes('?') ? `${src}&t=${timestamp}` : `${src}?t=${timestamp}`;
+          img.src = finalSrc;
+        } else {
+          // It's likely base64. Ensure it has the correct header.
+          if (src.startsWith('data:image')) {
+            img.src = src;
+          } else {
+            img.src = `data:image/jpeg;base64,${src}`;
+          }
+        }
+
+        img.onerror = function () {
+          console.error('Failed to load image:', finalSrc);
+          this.style.display = 'none';
+          toast('Error: Screenshot failed to load');
+        };
+
+        modal.style.display = 'flex';
+      }
+
+      function closeModal() {
+        document.getElementById('img-modal').style.display = 'none';
+      }
+
+      function toggleSuspicious(show) {
+        document.getElementById('section-hwid-list').style.display = show ? 'none' : 'block';
+        document.getElementById('section-suspicious-list').style.display = show ? 'block' : 'none';
+
+        document.getElementById('btn-hwid-list').style.background = show ? 'var(--card2)' : 'var(--accent)';
+        document.getElementById('btn-suspicious-list').style.background = show ? 'var(--accent)' : 'var(--card2)';
+
+        if (show) loadSuspicious();
+      }
+
+      async function resetHWID(id, username) {
+        if (!confirm(`Reset HWID for ${username}?`)) return;
+        const res = await api('POST', `/api/admin/hwid/${id}/reset`, {});
+        if (res.success) {
+          toast('HWID reset successfully');
+          loadHWID();
+        } else {
+          toast(res.message || 'Error resetting HWID');
+        }
+      }
+
+      async function deleteSuspicious(id) {
+        if (!confirm('Delete this log?')) return;
+        const res = await api('DELETE', `/api/admin/suspicious/${id}`);
+        if (res.success) {
+          toast('Log deleted');
+          loadSuspicious();
+        }
+      }
+
+      async function generateKeys(prefix) {
+        const days = parseInt(document.getElementById(prefix + '-days').value) || 30;
+        const count = parseInt(document.getElementById(prefix + '-count').value) || 1;
+        const d = await api('POST', '/api/admin/keys/generate', { days, count });
+        if (d.success) {
+          const out = document.getElementById(prefix + '-output');
+          out.style.display = 'block';
+          out.innerHTML = d.keys.map(k => `<div class="key-code" onclick="navigator.clipboard.writeText('${k}');toast('Copied!')">${k}</div>`).join('<br>');
+          toast(`${d.keys.length} key(s) generated!`);
+        }
+      }
+
+      async function loadKeys() {
+        const d = await api('GET', '/api/admin/keys');
+        if (!d.success) return;
+        const tb = document.getElementById('keys-table');
+        tb.innerHTML = d.keys.map(k => {
+          const isBanned = k.status === 'banned';
+          const isPaused = k.status === 'paused';
+          const isActive = k.status === 'active';
+
+          return `<tr>
+      <td><span class="key-code" onclick="navigator.clipboard.writeText('${k.key_code}');toast('Copied!')">${k.key_code}</span></td>
+      <td><span class="badge ${k.status}">${k.status}</span></td>
+      <td>${k.days}d</td>
+      <td>${k.used_by || '-'}</td>
+      <td>${k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-'}</td>
+      <td>
+        ${!isBanned ? `<button class="btn sm red" onclick="banKey('keys', ${k.id})"><i class="fas fa-ban"></i></button>` :
+              `<button class="btn sm green" onclick="enableKey('keys', ${k.id})"><i class="fas fa-check"></i></button>`}
+        
+        ${isActive ? `<button class="btn sm yellow" style="background:var(--yellow);color:#000" onclick="pauseKey('keys', ${k.id})"><i class="fas fa-pause"></i></button>` : ''}
+        ${isPaused ? `<button class="btn sm green" onclick="resumeKey('keys', ${k.id})"><i class="fas fa-play"></i></button>` : ''}
+        
+        <button class="btn sm red" onclick="deleteKey('keys', ${k.id}, '${k.key_code}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`}).join('');
+      }
+
+      let banTarget = null;
+      let banKeyId = null;
+      function banKey(type, id) { banTarget = type; banKeyId = id; document.getElementById('ban-modal').classList.add('show') }
+      function closeBanModal() { document.getElementById('ban-modal').classList.remove('show'); banTarget = null; banKeyId = null }
+      async function confirmBan() {
+        const msg = document.getElementById('ban-message').value;
+        await api('POST', `/api/admin/${banTarget}/${banKeyId}/ban`, { message: msg || 'Banned' });
+        closeBanModal(); toast('Key banned'); loadKeys(); loadMenuKeys();
+      }
+      async function enableKey(type, id) { await api('POST', `/api/admin/${type}/${id}/enable`); toast('Key enabled'); loadKeys(); loadMenuKeys(); }
+      async function pauseKey(type, id) { await api('POST', `/api/admin/${type}/${id}/pause`); toast('Key paused'); loadKeys(); loadMenuKeys(); }
+      async function resumeKey(type, id) { await api('POST', `/api/admin/${type}/${id}/resume`); toast('Key resumed'); loadKeys(); loadMenuKeys(); }
+      async function deleteKey(type, id, key) { if (!confirm(`Delete key ${key}?`)) return; await api('DELETE', `/api/admin/${type}/${id}`); toast('Key deleted'); loadKeys(); loadMenuKeys(); }
+
+      // ===== MENU KEYS =====
+      async function generateMenuKeys() {
+        const days = parseInt(document.getElementById('km-days').value) || 30;
+        const count = parseInt(document.getElementById('km-count').value) || 1;
+        const d = await api('POST', '/api/admin/menu-keys/generate', { days, count });
+        if (d.success) {
+          const out = document.getElementById('km-output');
+          out.style.display = 'block';
+          out.innerHTML = d.keys.map(k => `<div class="key-code" onclick="navigator.clipboard.writeText('${k}');toast('Copied!')">${k}</div>`).join('<br>');
+          toast(`${d.keys.length} menu key(s) generated!`);
+          loadMenuKeys();
+        }
+      }
+
+      async function loadMenuKeys() {
+        const d = await api('GET', '/api/admin/menu-keys');
+        if (!d.success) return;
+        const tb = document.getElementById('keys-menu-table');
+        tb.innerHTML = d.keys.map(k => {
+          const isBanned = k.status === 'banned';
+          const isPaused = k.status === 'paused';
+          const isActive = k.status === 'active';
+
+          return `<tr>
+      <td><span class="key-code" onclick="navigator.clipboard.writeText('${k.key_code}');toast('Copied!')">${k.key_code}</span></td>
+      <td><span class="badge ${k.status}">${k.status}</span></td>
+      <td>${k.days}d</td>
+      <td>${k.used_by || '-'}</td>
+      <td>${k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-'}</td>
+      <td>
+        ${!isBanned ? `<button class="btn sm red" onclick="banKey('menu-keys', ${k.id})"><i class="fas fa-ban"></i></button>` :
+              `<button class="btn sm green" onclick="enableKey('menu-keys', ${k.id})"><i class="fas fa-check"></i></button>`}
+        
+        ${isActive ? `<button class="btn sm yellow" style="background:var(--yellow);color:#000" onclick="pauseKey('menu-keys', ${k.id})"><i class="fas fa-pause"></i></button>` : ''}
+        ${isPaused ? `<button class="btn sm green" onclick="resumeKey('menu-keys', ${k.id})"><i class="fas fa-play"></i></button>` : ''}
+
+        <button class="btn sm red" onclick="deleteKey('menu-keys', ${k.id}, '${k.key_code}')"><i class="fas fa-trash"></i></button>
+      </td>
+    </tr>`}).join('');
+      }
+
+      async function deleteMenuKey(id) {
+        if (!confirm('Delete this menu key?')) return;
+        await api('DELETE', `/api/admin/menu-keys/${id}`);
+        toast('Menu key deleted');
+        loadMenuKeys();
+      }
+
+      async function loadUsers() {
+        const d = await api('GET', '/api/admin/users');
+        if (!d.success) return;
+        document.getElementById('users-table').innerHTML = d.users.map(u => `<tr>
+      <td><strong>${u.username}</strong></td>
+      <td><span class="key-code">${u.key_code}</span></td>
+      <td><span class="badge ${u.key_status || 'unknown'}">${u.key_status || '?'}</span></td>
+      <td>${u.days || '-'}d</td>
+      <td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td>
+      <td>${u.last_login ? new Date(u.last_login).toLocaleString() : '-'}</td>
+    </tr>`).join('');
+      }
+
+      async function loadOnline() {
+        const d = await api('GET', '/api/admin/online');
+        if (!d.success) return;
+        document.getElementById('online-count').textContent = `${d.count} user(s) online`;
+        document.getElementById('online-table').innerHTML = d.online.map(u => `<tr>
+      <td><span class="online-dot"></span><strong>${u.username}</strong></td>
+      <td>${u.ip || '-'}</td>
+      <td>${u.session_start ? new Date(u.session_start).toLocaleString() : '-'}</td>
+      <td>${u.last_heartbeat ? new Date(u.last_heartbeat).toLocaleString() : '-'}</td>
+    </tr>`).join('');
+      }
+
+      // ===== HWID ADMIN =====
+      async function loadHWID() {
+        const res = await api('GET', '/api/admin/hwid/list');
+        if (!res.success) return;
+
+        document.getElementById('h-total').innerText = res.total;
+        document.getElementById('h-locked').innerText = res.locked;
+        document.getElementById('h-blacklisted').innerText = res.blacklisted;
+
+        if (res.settings) {
+          const hb = document.getElementById('btn-toggle-hwid');
+          const ib = document.getElementById('btn-toggle-ip');
+          hb.innerHTML = `<i class="fas fa-microchip"></i> HWID: ${res.settings.hwid_enabled ? 'ON' : 'OFF'}`;
+          hb.style.background = res.settings.hwid_enabled ? 'var(--green)' : 'var(--red)';
+          ib.innerHTML = `<i class="fas fa-globe"></i> IP Lock: ${res.settings.ip_enabled ? 'ON' : 'OFF'}`;
+          ib.style.background = res.settings.ip_enabled ? 'var(--green)' : 'var(--red)';
+        }
+
+        const tbody = document.getElementById('hwid-list');
+        tbody.innerHTML = '';
+
+        res.hwids.forEach(h => {
+          let statusBadge = '<span class="badge active">Active</span>';
+          if (h.blacklisted) statusBadge = '<span class="badge banned">Blacklisted</span>';
+          else if (!h.key_locked) statusBadge = '<span class="badge unused">Unlocked</span>';
+
+          // Color coding for suspicious activity
+          let rowStyle = '';
+          let suspiciousIndicator = '';
+          if (h.suspicious_status === 'hwid_change') {
+            rowStyle = 'background:rgba(239, 68, 68, 0.1);border-left:3px solid var(--red)';
+            suspiciousIndicator = '<div style="font-size:10px;color:var(--red);font-weight:600">HWID CHANGE</div>';
+          } else if (h.suspicious_status === 'ip_change') {
+            rowStyle = 'background:rgba(234, 179, 8, 0.1);border-left:3px solid var(--yellow)';
+            suspiciousIndicator = '<div style="font-size:10px;color:var(--yellow);font-weight:600">VPN/IP CHANGE</div>';
+          }
+
+          const row = document.createElement('tr');
+          if (rowStyle) row.style = rowStyle;
+          row.innerHTML = `
+            <td>
+              <div style="font-weight:600">${h.username}</div>
+              <div style="font-size:11px;color:var(--text2)">ID: ${h.user_id}</div>
+              ${suspiciousIndicator}
+            </td>
+            <td>
+              <div style="font-family:monospace;font-size:11px">${h.hwid || 'Not registered'}</div>
+              <div style="font-size:11px;color:var(--text2)">${h.hwid_registered_at ? new Date(h.hwid_registered_at).toLocaleString() : 'Never'}</div>
+            </td>
+            <td>
+              <div style="font-family:monospace;font-size:11px">${h.registered_ip || 'Not registered'}</div>
+              <div style="font-size:11px;color:var(--text2)">${h.ip_registered_at ? new Date(h.ip_registered_at).toLocaleString() : 'Never'}</div>
+            </td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn" style="padding:4px 8px;font-size:11px;background:var(--accent)" onclick="resetHWID(${h.user_id}, '${h.username}')">Reset</button>
+              ${h.blacklisted ? `<button class="btn" style="padding:4px 8px;font-size:11px;background:var(--green)" onclick="enableKey('${h.key_code}')">Unban</button>` : ''}
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        loadSuspicious();
+      }
+
+      async function toggleHWIDSystem() {
+        const res = await api('POST', '/api/admin/settings/toggle-hwid');
+        if (res.success) {
+          toast('HWID system ' + (res.hwid_enabled ? 'enabled' : 'disabled'));
+          loadHWID();
+        }
+      }
+
+      async function toggleIPSystem() {
+        const res = await api('POST', '/api/admin/settings/toggle-ip');
+        if (res.success) {
+          toast('IP lock ' + (res.ip_enabled ? 'enabled' : 'disabled'));
+          loadHWID();
+        }
+      }
+
+      // ===== CHAT ADMIN =====
+      let chatLocked = false;
+
+      async function loadChatMessages() {
+        try {
+          const r = await fetch('/api/chat/messages');
+          const msgs = await r.json();
+          const el = document.getElementById('chat-messages');
+          document.getElementById('chat-msg-count').textContent = msgs.length;
+          if (!msgs.length) { el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:40px">No messages yet</div>'; return; }
+          el.innerHTML = msgs.map(m => {
+            if (m.role === 'admin') {
+              return `<div style="margin-bottom:6px"><span class="admin-rgb" style="font-weight:700">${m.username}</span> <span style="color:var(--text2);font-size:11px">${m.time || ''}</span><br><span style="color:#fff">${escHtml(m.text)}</span></div>`;
+            }
+            const avHtml = m.avatar ? `<img src="${m.avatar}" style="width:22px;height:22px;border-radius:50%;vertical-align:middle;margin-right:6px;object-fit:cover">` : '';
+            return `<div style="margin-bottom:6px">${avHtml}<span style="color:var(--accent);font-weight:600">${escHtml(m.username)}</span> <span style="color:var(--text2);font-size:11px">${m.time || ''}</span><br><span style="color:var(--text)">${escHtml(m.text)}</span></div>`;
+          }).join('');
+          el.scrollTop = el.scrollHeight;
+        } catch (e) { }
+      }
+
+      async function loadChatStatus() {
+        try {
+          const r = await fetch('/api/chat/status');
+          const d = await r.json();
+          chatLocked = d.locked;
+          document.getElementById('chat-status-label').textContent = chatLocked ? 'Locked' : 'Open';
+          document.getElementById('chat-status-label').style.color = chatLocked ? 'var(--red)' : 'var(--green)';
+          document.getElementById('btn-chat-lock').innerHTML = chatLocked ? '<i class="fas fa-lock-open"></i>Unlock Chat' : '<i class="fas fa-lock"></i>Lock Chat';
+        } catch (e) { }
+      }
+
+      async function toggleChatLock() {
+        await api('POST', '/api/admin/chat/lock');
+        await loadChatStatus();
+        toast(chatLocked ? 'Chat locked' : 'Chat unlocked');
+      }
+
+      async function clearChat() {
+        if (!confirm('Clear all chat messages?')) return;
+        await api('POST', '/api/admin/chat/clear');
+        toast('Chat cleared');
+        loadChatMessages();
+      }
+
+      async function adminSendChat() {
+        const inp = document.getElementById('admin-chat-input');
+        const text = inp.value.trim();
+        if (!text) return;
+        await api('POST', '/api/admin/chat/send', { text });
+        inp.value = '';
+        loadChatMessages();
+      }
+
+      function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+      // ===== BLOCK INJECT ADMIN =====
+      async function loadBlockInject() {
+        console.log('Loading block inject status...');
+        const res = await api('GET', '/api/admin/block-inject/status');
+        console.log('Block inject response:', res);
+        if (!res.success) return;
+
+        updateBlockDisplay(res.block_inject);
+      }
+
+      async function toggleBlockInject() {
+        console.log('Toggling block inject...');
+        const res = await api('POST', '/api/admin/block-inject/toggle');
+        console.log('Toggle response:', res);
+        if (res.success) {
+          toast(`Block inject ${res.block_inject ? 'enabled' : 'disabled'}`);
+          updateBlockDisplay(res.block_inject);
+        }
+      }
+
+      function updateBlockDisplay(blocked) {
+        const status = document.getElementById('block-status');
+        const button = document.getElementById('btn-toggle-block');
+
+        status.textContent = blocked ? 'Enabled' : 'Disabled';
+        status.style.color = blocked ? 'var(--red)' : 'var(--green)';
+
+        if (blocked) {
+          button.innerHTML = '<i class="fas fa-power-off"></i> Disable Block';
+          button.style.background = 'var(--red)';
+        } else {
+          button.innerHTML = '<i class="fas fa-power-off"></i> Enable Block';
+          button.style.background = 'var(--green)';
+        }
+      }
+
+      // ===== TICKETS ADMIN =====
+      let currentTicketId = null;
+
+      async function loadTickets() {
+        const res = await api('GET', '/api/admin/tickets');
+        if (!res.success) return;
+        const tickets = res.tickets;
+        document.getElementById('t-total').textContent = tickets.length;
+        document.getElementById('t-open').textContent = tickets.filter(t => t.status === 'open').length;
+        document.getElementById('t-closed').textContent = tickets.filter(t => t.status === 'closed').length;
+        const tb = document.getElementById('tickets-table');
+        tb.innerHTML = tickets.sort((a, b) => b.id - a.id).map(t => `<tr>
+          <td>#${t.id}</td>
+          <td><strong>${escHtml(t.username)}</strong></td>
+          <td>${escHtml(t.subject)}</td>
+          <td>${t.message_count}</td>
+          <td><span class="badge ${t.status === 'open' ? 'active' : 'expired'}">${t.status}</span></td>
+          <td>${new Date(t.created_at).toLocaleString()}</td>
+          <td><button class="btn sm" onclick="viewTicket(${t.id})"><i class="fas fa-eye"></i></button></td>
+        </tr>`).join('');
+      }
+
+      async function viewTicket(id) {
+        currentTicketId = id;
+        const res = await api('GET', '/api/admin/tickets/' + id);
+        if (!res.success) return;
+        const t = res.ticket;
+        document.getElementById('tickets-list-view').style.display = 'none';
+        document.getElementById('ticket-detail-view').style.display = 'block';
+        document.getElementById('td-subject').textContent = t.subject;
+        document.getElementById('td-user').textContent = 'By: ' + t.username + ' | Status: ' + t.status;
+        document.getElementById('td-close-btn').style.display = t.status === 'open' ? '' : 'none';
+        document.getElementById('td-reopen-btn').style.display = t.status === 'closed' ? '' : 'none';
+        const el = document.getElementById('td-messages');
+        el.innerHTML = t.messages.map(m => {
+          if (m.role === 'admin') {
+            return `<div style="margin-bottom:8px;padding:8px;background:rgba(255,140,0,.08);border-radius:6px"><span class="admin-rgb" style="font-weight:700">${m.from}</span> <span style="color:var(--text2);font-size:11px">${new Date(m.time).toLocaleString()}</span><br>${escHtml(m.text)}</div>`;
+          }
+          return `<div style="margin-bottom:8px;padding:8px;background:rgba(255,255,255,.03);border-radius:6px"><span style="color:var(--accent);font-weight:600">${escHtml(m.from)}</span> <span style="color:var(--text2);font-size:11px">${new Date(m.time).toLocaleString()}</span><br>${escHtml(m.text)}</div>`;
+        }).join('');
+        el.scrollTop = el.scrollHeight;
+      }
+
+      function backToTickets() {
+        document.getElementById('tickets-list-view').style.display = 'block';
+        document.getElementById('ticket-detail-view').style.display = 'none';
+        currentTicketId = null;
+        loadTickets();
+      }
+
+      async function replyTicket() {
+        if (!currentTicketId) return;
+        const inp = document.getElementById('td-reply-input');
+        const text = inp.value.trim();
+        if (!text) return;
+        await api('POST', '/api/admin/tickets/' + currentTicketId + '/reply', { text });
+        inp.value = '';
+        viewTicket(currentTicketId);
+      }
+
+      async function closeTicket() {
+        if (!currentTicketId) return;
+        await api('POST', '/api/admin/tickets/' + currentTicketId + '/close');
+        toast('Ticket closed');
+        viewTicket(currentTicketId);
+      }
+
+      async function reopenTicket() {
+        if (!currentTicketId) return;
+        await api('POST', '/api/admin/tickets/' + currentTicketId + '/reopen');
+        toast('Ticket reopened');
+        viewTicket(currentTicketId);
+      }
+
+      // RGB animation for admin names
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes rgbFlash {
+          0% { color: #ff0000; }
+          16% { color: #ff8800; }
+          33% { color: #ffff00; }
+          50% { color: #00ff00; }
+          66% { color: #0088ff; }
+          83% { color: #8800ff; }
+          100% { color: #ff0000; }
+        }
+        .admin-rgb { animation: rgbFlash 2s linear infinite; }
+      `;
+      document.head.appendChild(style);
+
+      // Auto refresh
+      loadStats();
+      setInterval(() => {
+        const active = document.querySelector('.page.active');
+        if (active.id === 'page-dashboard') loadStats();
+        if (active.id === 'page-online') loadOnline();
+        if (active.id === 'page-chat') loadChatMessages();
+      }, 3000);
+    </script>
+
+    <!-- Screenshot Modal -->
+    <div id="img-modal" class="img-modal" onclick="closeModal()">
+      <div class="img-modal-content" onclick="event.stopPropagation()">
+        <div class="img-modal-header">
+          <span style="font-weight:600">Captured Screenshot</span>
+          <i class="fas fa-times close-modal" onclick="closeModal()"></i>
+        </div>
+        <img id="modal-img" src="" alt="Screenshot">
+      </div>
+    </div>
+</body>
+
+</html>
