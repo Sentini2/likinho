@@ -28,33 +28,30 @@ app.set('trust proxy', true);
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static('public'));
-app.use('/screenshots', express.static('public/screenshots'));
-app.use('/avatars', express.static('public/avatars'));
-
-// ===== MONGODB CONNECTION =====
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/likinho_db';
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
 
 // ===== GATEKEEPER (LOGIN) =====
 const GATE_USER = 'lk';
-const GATE_PASS = 'bdlk1234599np'; // Stored here for master access, but can be in DB
+const GATE_PASS = 'bdlk1234599np';
 
 const authGate = async (req, res, next) => {
-    // Skip for static assets and login route
-    const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico'];
-    if (staticExtensions.some(ext => req.path.endsWith(ext)) || req.path === '/gate/login') {
+    // 1. Skip for API routes (they have their own security or are public for loader)
+    if (req.path.startsWith('/api/') || req.path === '/gate/login') {
+        return next();
+    }
+
+    // 2. Skip for static assets (images, css, js)
+    const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico', '.pdf'];
+    if (staticExtensions.some(ext => req.path.toLowerCase().endsWith(ext))) {
         return next();
     }
 
     const gateToken = req.cookies.gate_token;
 
-    // Simple check: In a real app, use JWT or DB session
     if (gateToken !== 'authenticated_lk') {
-        const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        console.log(`[GATEKEEPER] Unauthorized access attempt from: ${clientIP}`);
+        const clientIPs = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const mainIP = clientIPs.split(',')[0].trim();
+
+        console.log(`[GATEKEEPER] Protected access attempt from: ${mainIP} | Path: ${req.path}`);
 
         return res.send(`
             <!DOCTYPE html>
@@ -62,35 +59,62 @@ const authGate = async (req, res, next) => {
             <head>
                 <title>LiKinho API - Login</title>
                 <style>
-                    body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
-                    .login-box { background: #111; padding: 40px; border-radius: 12px; border: 1px solid #333; width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-                    h1 { margin-bottom: 30px; font-size: 22px; letter-spacing: 1px; color: #ff8c00; }
-                    input { width: 100%; padding: 12px; margin-bottom: 20px; background: #222; border: 1px solid #444; border-radius: 6px; color: #fff; box-sizing: border-box; }
-                    button { width: 100%; padding: 12px; background: #ff8c00; border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
-                    button:hover { background: #ffa500; }
-                    .error { color: #ff4444; font-size: 14px; margin-bottom: 15px; display: none; }
+                    body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+                    .login-box { background: #111; padding: 40px; border-radius: 12px; border: 1px solid #333; width: 320px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+                    h1 { margin-bottom: 30px; font-size: 24px; letter-spacing: 2px; color: #ff8c00; text-transform: uppercase; }
+                    .input-group { margin-bottom: 20px; text-align: left; }
+                    label { display: block; margin-bottom: 8px; font-size: 13px; color: #888; text-transform: uppercase; }
+                    input { width: 100%; padding: 12px; background: #222; border: 1px solid #444; border-radius: 6px; color: #fff; box-sizing: border-box; outline: none; transition: 0.3s; }
+                    input:focus { border-color: #ff8c00; }
+                    button { width: 100%; padding: 14px; background: #ff8c00; border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; margin-top: 10px; }
+                    button:hover { background: #ffa500; transform: translateY(-2px); }
+                    .error { color: #ff4444; font-size: 14px; margin-bottom: 20px; display: none; padding: 10px; background: rgba(255, 68, 68, 0.1); border-radius: 4px; }
                 </style>
             </head>
             <body>
                 <div class="login-box">
                     <h1>LiKinho API</h1>
-                    <div id="error" class="error">Dados incorretos</div>
-                    <input type="text" id="user" placeholder="Usuário">
-                    <input type="password" id="pass" placeholder="Senha">
+                    <div id="error" class="error">Credenciais Inválidas</div>
+                    <div class="input-group">
+                        <label>Usuário</label>
+                        <input type="text" id="user" placeholder="Digite o usuário">
+                    </div>
+                    <div class="input-group">
+                        <label>Senha</label>
+                        <input type="password" id="pass" placeholder="Digite a senha">
+                    </div>
                     <button onclick="login()">ENTRAR</button>
                 </div>
                 <script>
                     async function login() {
                         const user = document.getElementById('user').value;
                         const pass = document.getElementById('pass').value;
-                        const res = await fetch('/gate/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ user, pass })
-                        });
-                        if (res.ok) window.location.reload();
-                        else document.getElementById('error').style.display = 'block';
+                        const btn = document.querySelector('button');
+                        btn.disabled = true;
+                        btn.innerText = 'CARREGANDO...';
+
+                        try {
+                            const res = await fetch('/gate/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ user, pass })
+                            });
+                            if (res.ok) {
+                                window.location.reload();
+                            } else {
+                                document.getElementById('error').style.display = 'block';
+                                btn.disabled = false;
+                                btn.innerText = 'ENTRAR';
+                            }
+                        } catch(e) {
+                            alert('Erro de conexão');
+                            btn.disabled = false;
+                            btn.innerText = 'ENTRAR';
+                        }
                     }
+                    document.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') login();
+                    });
                 </script>
             </body>
             </html>
@@ -102,6 +126,16 @@ const authGate = async (req, res, next) => {
 
 app.use(authGate);
 
+// Publicly served files (only after authGate)
+app.use(express.static('public'));
+app.use('/screenshots', express.static('public/screenshots'));
+app.use('/avatars', express.static('public/avatars'));
+
+app.get('/gate/logout', (req, res) => {
+    res.clearCookie('gate_token');
+    res.redirect('/');
+});
+
 // Gate Login Route
 app.post('/gate/login', (req, res) => {
     const { user, pass } = req.body;
@@ -112,10 +146,12 @@ app.post('/gate/login', (req, res) => {
     res.status(401).json({ error: 'Auth failed' });
 });
 
-app.get('/gate/logout', (req, res) => {
-    res.clearCookie('gate_token');
-    res.redirect('/');
-});
+// ===== MONGODB CONNECTION =====
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/likinho_db';
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB Connection Error:', err));
+
 
 // ===== VPN DETECTION =====
 async function isVPN(ip) {
