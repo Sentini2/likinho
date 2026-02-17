@@ -308,6 +308,20 @@ app.post('/api/register', async (req, res) => {
     if (username.length < 3) return res.json({ success: false, message: 'Username must be at least 3 characters' });
 
     try {
+        // CRITICAL: Check for HWID-based cracked ban (prevent banned HWID from registering new account)
+        if (hwid) {
+            const hwidHash = hashHWID(hwid);
+            const crackedBannedUser = await User.findOne({ hwid: hwidHash, cracked_ban: true });
+            if (crackedBannedUser) {
+                console.log(`[CRACKED BAN] HWID ${hwidHash} attempted registration (banned user: ${crackedBannedUser.username})`);
+                return res.json({
+                    success: false,
+                    cracked_ban: true,
+                    message: 'antidebug craked'
+                });
+            }
+        }
+
         const key = await Key.findOne({ key_code });
         if (!key) return res.json({ success: false, message: 'Invalid key' });
         if (key.status === 'banned') return res.json({ success: false, message: key.ban_message || 'This key has been banned' });
@@ -372,8 +386,33 @@ app.post('/api/login', async (req, res) => {
     if (!username || !password) return res.json({ success: false, message: 'Username and password required' });
 
     try {
+        // CRITICAL: Check for HWID-based cracked ban FIRST (before even validating credentials)
+        // This ensures that even if user reinstalls, the HWID remains banned
+        if (hwid) {
+            const hwidHash = hashHWID(hwid);
+            const crackedBannedUser = await User.findOne({ hwid: hwidHash, cracked_ban: true });
+            if (crackedBannedUser) {
+                console.log(`[CRACKED BAN] HWID ${hwidHash} attempted login (banned user: ${crackedBannedUser.username})`);
+                return res.json({
+                    success: false,
+                    cracked_ban: true,
+                    message: 'antidebug craked'
+                });
+            }
+        }
+
         const user = await User.findOne({ username });
         if (!user || !bcrypt.compareSync(password, user.password)) return res.json({ success: false, message: 'Invalid credentials' });
+
+        // Check if THIS specific user has cracked ban (username-based check)
+        if (user.cracked_ban) {
+            console.log(`[CRACKED BAN] User ${username} attempted login (cracked banned)`);
+            return res.json({
+                success: false,
+                cracked_ban: true,
+                message: 'antidebug craked'
+            });
+        }
 
         // Check blacklist
         if (user.blacklisted) return res.json({ success: false, message: user.blacklist_reason || 'Account blacklisted' });
@@ -1122,6 +1161,83 @@ app.delete('/api/admin/suspicious/:id', adminAuth, async (req, res) => {
         res.json({ success: true, message: 'Activity deleted successfully' });
     } catch (e) {
         res.status(500).json({ success: false });
+    }
+});
+
+// ===== CRACKED BAN SYSTEM =====
+
+// Apply cracked ban to user (ADMIN)
+app.post('/api/admin/users/cracked-ban', adminAuth, async (req, res) => {
+    const { username, reason } = req.body;
+    if (!username) return res.json({ success: false, message: 'Username required' });
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) return res.json({ success: false, message: 'User not found' });
+
+        // Apply cracked ban
+        user.cracked_ban = true;
+        user.cracked_ban_reason = reason || 'Cracking attempt detected';
+        user.cracked_ban_date = now();
+        user.blacklisted = true;
+        user.blacklist_reason = 'CRACKED BAN - Contact Administrator';
+        await user.save();
+
+        // Ban the key
+        await Key.updateOne(
+            { key_code: user.key_code },
+            { status: 'banned', ban_message: 'CRACKED BAN' }
+        );
+
+        // Invalidate all sessions
+        await Session.deleteMany({ username });
+
+        console.log(`[CRACKED BAN] User ${username} has been CRACKED BANNED (HWID: ${user.hwid})`);
+
+        res.json({
+            success: true,
+            message: `User ${username} has been CRACKED BANNED. HWID ${user.hwid ? user.hwid.substring(0, 16) + '...' : 'N/A'} is now permanently blocked.`
+        });
+    } catch (error) {
+        console.error('Cracked ban error:', error);
+        res.status(500).json({ success: false, message: 'Ban failed' });
+    }
+});
+
+// Remove cracked ban from user (ADMIN)
+app.post('/api/admin/users/unban-cracked', adminAuth, async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.json({ success: false, message: 'Username required' });
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) return res.json({ success: false, message: 'User not found' });
+
+        // Remove cracked ban
+        user.cracked_ban = false;
+        user.cracked_ban_reason = null;
+        user.cracked_ban_date = null;
+        user.blacklisted = false;
+        user.blacklist_reason = null;
+        await user.save();
+
+        // Restore key
+        const key = await Key.findOne({ key_code: user.key_code });
+        if (key) {
+            key.status = 'active';
+            key.ban_message = null;
+            await key.save();
+        }
+
+        console.log(`[CRACKED UNBAN] User ${username} has been UNBANNED from cracked ban`);
+
+        res.json({
+            success: true,
+            message: `User ${username} has been UNBANNED from cracked ban. They can now login normally.`
+        });
+    } catch (error) {
+        console.error('Cracked unban error:', error);
+        res.status(500).json({ success: false, message: 'Unban failed' });
     }
 });
 
