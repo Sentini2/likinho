@@ -20,6 +20,7 @@ const Activity = require('./models/Activity');
 const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
+const WhitelistIP = require('./models/WhitelistIP');
 
 const app = express();
 app.set('trust proxy', true);
@@ -34,6 +35,55 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/likinh
 mongoose.connect(MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB Connection Error:', err));
+
+// ===== GATEKEEPER MIDDLEWARE =====
+const gatekeeper = async (req, res, next) => {
+    // Skip gatekeeper for static files in public folder
+    const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico'];
+    if (staticExtensions.some(ext => req.path.endsWith(ext))) {
+        return next();
+    }
+
+    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const cleanIP = clientIP.replace('::ffff:', '');
+
+    try {
+        const isWhitelisted = await WhitelistIP.findOne({ ip: cleanIP });
+
+        if (!isWhitelisted) {
+            console.log(`[GATEKEEPER] Access denied for IP: ${cleanIP} | Path: ${req.path}`);
+
+            // If it's the root path or any HTML path, show the "LiKinho API" message
+            if (req.path === '/' || !req.path.startsWith('/api')) {
+                return res.send(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>LiKinho API</title>
+                        <style>
+                            body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
+                            h1 { font-size: 24px; letter-spacing: 2px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>LiKinho API</h1>
+                    </body>
+                    </html>
+                `);
+            }
+
+            // For API calls, return forbidden
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        next();
+    } catch (err) {
+        console.error('Gatekeeper error:', err);
+        next(); // Don't block everything if DB fails
+    }
+};
+
+app.use(gatekeeper);
 
 // ===== VPN DETECTION =====
 async function isVPN(ip) {
