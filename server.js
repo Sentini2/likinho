@@ -3,6 +3,7 @@ const dns = require('dns');
 try { dns.setServers(['8.8.8.8', '8.8.4.4']); } catch (e) { console.error('DNS fix failed'); }
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const crypto = require('crypto');
@@ -20,11 +21,12 @@ const Activity = require('./models/Activity');
 const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
-const WhitelistIP = require('./models/WhitelistIP');
+// const WhitelistIP = require('./models/WhitelistIP'); // DELETED
 
 const app = express();
 app.set('trust proxy', true);
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 app.use('/screenshots', express.static('public/screenshots'));
@@ -36,54 +38,84 @@ mongoose.connect(MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB Connection Error:', err));
 
-// ===== GATEKEEPER MIDDLEWARE =====
-const gatekeeper = async (req, res, next) => {
-    // Skip gatekeeper for static files in public folder
+// ===== GATEKEEPER (LOGIN) =====
+const GATE_USER = 'lk';
+const GATE_PASS = 'bdlk1234599np'; // Stored here for master access, but can be in DB
+
+const authGate = async (req, res, next) => {
+    // Skip for static assets and login route
     const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico'];
-    if (staticExtensions.some(ext => req.path.endsWith(ext))) {
+    if (staticExtensions.some(ext => req.path.endsWith(ext)) || req.path === '/gate/login') {
         return next();
     }
 
-    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const cleanIP = clientIP.replace('::ffff:', '');
+    const gateToken = req.cookies.gate_token;
 
-    try {
-        const isWhitelisted = await WhitelistIP.findOne({ ip: cleanIP });
+    // Simple check: In a real app, use JWT or DB session
+    if (gateToken !== 'authenticated_lk') {
+        const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        console.log(`[GATEKEEPER] Unauthorized access attempt from: ${clientIP}`);
 
-        if (!isWhitelisted) {
-            console.log(`[GATEKEEPER] Access denied for IP: ${cleanIP} | Path: ${req.path}`);
-
-            // If it's the root path or any HTML path, show the "LiKinho API" message
-            if (req.path === '/' || !req.path.startsWith('/api')) {
-                return res.send(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>LiKinho API</title>
-                        <style>
-                            body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; }
-                            h1 { font-size: 24px; letter-spacing: 2px; }
-                        </style>
-                    </head>
-                    <body>
-                        <h1>LiKinho API</h1>
-                    </body>
-                    </html>
-                `);
-            }
-
-            // For API calls, return forbidden
-            return res.status(403).json({ error: 'Forbidden' });
-        }
-
-        next();
-    } catch (err) {
-        console.error('Gatekeeper error:', err);
-        next(); // Don't block everything if DB fails
+        return res.send(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>LiKinho API - Login</title>
+                <style>
+                    body { background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+                    .login-box { background: #111; padding: 40px; border-radius: 12px; border: 1px solid #333; width: 300px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+                    h1 { margin-bottom: 30px; font-size: 22px; letter-spacing: 1px; color: #ff8c00; }
+                    input { width: 100%; padding: 12px; margin-bottom: 20px; background: #222; border: 1px solid #444; border-radius: 6px; color: #fff; box-sizing: border-box; }
+                    button { width: 100%; padding: 12px; background: #ff8c00; border: none; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }
+                    button:hover { background: #ffa500; }
+                    .error { color: #ff4444; font-size: 14px; margin-bottom: 15px; display: none; }
+                </style>
+            </head>
+            <body>
+                <div class="login-box">
+                    <h1>LiKinho API</h1>
+                    <div id="error" class="error">Dados incorretos</div>
+                    <input type="text" id="user" placeholder="Usuário">
+                    <input type="password" id="pass" placeholder="Senha">
+                    <button onclick="login()">ENTRAR</button>
+                </div>
+                <script>
+                    async function login() {
+                        const user = document.getElementById('user').value;
+                        const pass = document.getElementById('pass').value;
+                        const res = await fetch('/gate/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user, pass })
+                        });
+                        if (res.ok) window.location.reload();
+                        else document.getElementById('error').style.display = 'block';
+                    }
+                </script>
+            </body>
+            </html>
+        `);
     }
+
+    next();
 };
 
-app.use(gatekeeper);
+app.use(authGate);
+
+// Gate Login Route
+app.post('/gate/login', (req, res) => {
+    const { user, pass } = req.body;
+    if (user === GATE_USER && pass === GATE_PASS) {
+        res.cookie('gate_token', 'authenticated_lk', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+        return res.json({ success: true });
+    }
+    res.status(401).json({ error: 'Auth failed' });
+});
+
+app.get('/gate/logout', (req, res) => {
+    res.clearCookie('gate_token');
+    res.redirect('/');
+});
 
 // ===== VPN DETECTION =====
 async function isVPN(ip) {
