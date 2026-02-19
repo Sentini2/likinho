@@ -929,6 +929,24 @@
           <i class="fas fa-info-circle"></i> When the Loader launches, it checks this version. If it's different from
           the local version, it will download the EXE from the URL above and self-update.
         </p>
+
+        <div class="section-title" style="margin-top:30px"><i class="fas fa-history"></i>Update History</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>Date</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+            <tbody id="update-history-table">
+              <tr>
+                <td colspan="3" style="text-align:center;padding:20px;color:var(--text2)">No history available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -977,6 +995,21 @@
               <div style="font-size:12px;color:var(--text2)">Red error animation</div>
               <div style="font-size:12px;color:var(--text2)">"Searching for future updates"</div>
             </div>
+          </div>
+        </div>
+        <div
+          style="margin-top:20px;padding:20px;background:var(--card2);border-radius:12px;border:1px solid rgba(255,255,255,0.05)">
+          <div style="display:flex;align-items:center;gap:20px">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:16px;margin-bottom:8px">Block Hard Execute</div>
+              <div style="color:var(--text2);font-size:13px">When enabled, users will login but see a popup message and
+                won't be able to open the loader.</div>
+              <div style="margin-top:8px;color:var(--orange);font-size:12px">Current status: <span
+                  id="hard-block-status">Disabled</span></div>
+            </div>
+            <button class="btn orange" onclick="promptBlockHard()" style="font-size:14px;padding:12px 24px">
+              <i class="fas fa-hand-paper"></i> Block Hard Execute
+            </button>
           </div>
         </div>
       </div>
@@ -1047,8 +1080,8 @@
         if (name === 'hwid') loadHWID();
         if (name === 'chat') { loadChatMessages(); loadChatStatus(); }
         if (name === 'tickets') loadTickets();
-        if (name === 'block') loadBlockInject();
-        if (name === 'update') loadUpdateSettings();
+        if (name === 'block') { loadBlockInject(); loadBlockHardStatus(); }
+        if (name === 'update') { loadUpdateSettings(); loadUpdateHistory(); }
       }
 
       async function loadStats() {
@@ -1462,6 +1495,27 @@
         if (!res.success) return;
 
         updateBlockDisplay(res.block_inject);
+        loadBlockHardStatus();
+      }
+
+      async function loadBlockHardStatus() {
+        const res = await api('GET', '/api/admin/block-hard/status');
+        if (res.success) {
+          const statusEl = document.getElementById('hard-block-status');
+          statusEl.innerText = res.block_hard ? 'Enabled' : 'Disabled';
+          statusEl.style.color = res.block_hard ? 'var(--red)' : 'var(--green)';
+        }
+      }
+
+      async function promptBlockHard() {
+        const msg = prompt("Enter the block message to show in the popup:", "Service under maintenance. Please try again later.");
+        if (msg === null) return;
+
+        const res = await api('POST', '/api/admin/block-hard/toggle', { message: msg });
+        if (res.success) {
+          toast(`Block hard ${res.block_hard ? 'enabled' : 'disabled'}`);
+          loadBlockHardStatus();
+        }
       }
 
       async function toggleBlockInject() {
@@ -1491,6 +1545,24 @@
       }
 
       // ===== AUTO UPDATE ADMIN =====
+      async function loadUpdateHistory() {
+        const res = await api('GET', '/api/admin/update/history');
+        if (res.success && res.history) {
+          const table = document.getElementById('update-history-table');
+          if (res.history.length === 0) {
+            table.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text2)">No history available</td></tr>';
+            return;
+          }
+          table.innerHTML = res.history.map(h => `
+            <tr>
+              <td><span class="badge blue">${h.version}</span></td>
+              <td style="font-size:12px;color:var(--text2)">${new Date(h.date).toLocaleString()}</td>
+              <td style="font-size:12px;max-width:300px;overflow:hidden;text-overflow:ellipsis">${h.url}</td>
+            </tr>
+          `).join('');
+        }
+      }
+
       async function loadUpdateSettings() {
         const res = await api('GET', '/api/admin/hwid/list'); // Reuse stats/settings fetch or just fetch setup
         // Actually, let's fetch settings directly from the new route we should have?
@@ -1508,6 +1580,7 @@
         const res = await api('POST', '/api/admin/settings/update', { current_version, update_url });
         if (res.success) {
           toast('Update settings saved!');
+          loadUpdateHistory();
         } else {
           toast('Failed to save settings', 'red');
         }

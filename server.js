@@ -21,6 +21,7 @@ const Activity = require('./models/Activity');
 const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
+const UpdateHistory = require('./models/UpdateHistory');
 // const WhitelistIP = require('./models/WhitelistIP'); // DELETED
 
 const app = express();
@@ -549,6 +550,9 @@ app.post('/api/login', async (req, res) => {
             days_left: daysLeft,
             menu_key_status: menuKeyStatus,
             menu_key_days: menuKeyDays,
+            is_admin: user.is_admin,
+            block_hard: settings.block_hard,
+            block_hard_msg: settings.block_hard_msg,
             message: 'Login successful'
         };
 
@@ -1028,13 +1032,50 @@ app.post('/api/admin/settings/update', adminAuth, async (req, res) => {
         const settings = await getSettings();
         if (block_inject !== undefined) settings.block_inject = block_inject;
         if (locked !== undefined) settings.locked = locked;
-        if (current_version !== undefined) settings.current_version = current_version;
-        if (update_url !== undefined) settings.update_url = update_url;
+        settings.current_version = current_version;
+        settings.update_url = update_url;
         await settings.save();
+
+        if (current_version || update_url) {
+            const history = new UpdateHistory({
+                version: current_version || settings.current_version,
+                url: update_url || settings.update_url
+            });
+            await history.save();
+        }
+
         res.json({ success: true, settings });
     } catch (e) {
         res.status(500).json({ success: false, message: 'Update failed' });
     }
+});
+
+// Get Update History
+app.get('/api/admin/update/history', adminAuth, async (req, res) => {
+    try {
+        const history = await UpdateHistory.find().sort({ date: -1 }).limit(10);
+        res.json({ success: true, history });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Toggle Block Hard
+app.post('/api/admin/block-hard/toggle', adminAuth, async (req, res) => {
+    try {
+        const { message } = req.body;
+        const settings = await getSettings();
+        settings.block_hard = !settings.block_hard;
+        if (message) settings.block_hard_msg = message;
+        await settings.save();
+        res.json({ success: true, block_hard: settings.block_hard, block_hard_msg: settings.block_hard_msg });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Get Block Hard Status
+app.get('/api/admin/block-hard/status', adminAuth, async (req, res) => {
+    try {
+        const settings = await getSettings();
+        res.json({ success: true, block_hard: settings.block_hard, block_hard_msg: settings.block_hard_msg });
+    } catch (e) { res.status(500).json({ success: false }); }
 });
 
 // Block Inject Management
