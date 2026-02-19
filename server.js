@@ -12,6 +12,7 @@ const fs = require('fs');
 const os = require('os');
 const http = require('http');
 const mongoose = require('mongoose');
+const multer = require('multer');
 
 // Models
 const User = require('./models/User');
@@ -28,7 +29,22 @@ const app = express();
 app.set('trust proxy', true);
 app.use(cors());
 app.use(cookieParser());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Storage for EXE updates
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = path.join(__dirname, 'public/updates');
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `LoaderLK_${Date.now()}${ext}`);
+    }
+});
+const upload = multer({ storage });
 
 // ===== GATEKEEPER (LOGIN) =====
 const GATE_USER = 'lk';
@@ -1078,6 +1094,41 @@ app.get('/api/admin/block-hard/status', adminAuth, async (req, res) => {
         const settings = await getSettings();
         res.json({ success: true, block_hard: settings.block_hard, block_hard_msg: settings.block_hard_msg });
     } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Clear Update History
+app.get('/api/admin/update/history/clear', adminAuth, async (req, res) => {
+    try {
+        await UpdateHistory.deleteMany({});
+        res.json({ success: true, message: 'History cleared' });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Upload EXE Update
+app.post('/api/admin/update/upload', adminAuth, upload.single('exe'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+        const settings = await getSettings();
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const fileUrl = `${protocol}://${host}/updates/${req.file.filename}`;
+
+        // Use generic version if none provided, or stay same
+        const newVersion = req.body.version || settings.current_version || "1.1";
+
+        settings.current_version = newVersion;
+        settings.update_url = fileUrl;
+        await settings.save();
+
+        const history = new UpdateHistory({ version: newVersion, url: fileUrl });
+        await history.save();
+
+        res.json({ success: true, version: newVersion, url: fileUrl });
+    } catch (e) {
+        console.error('Upload error:', e);
+        res.status(500).json({ success: false });
+    }
 });
 
 // Block Inject Management

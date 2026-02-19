@@ -923,14 +923,25 @@
               URL</label>
             <input type="text" id="upd-url" style="width:100%" placeholder="https://example.com/Loader.exe">
           </div>
-          <button class="btn" onclick="saveUpdateSettings()"><i class="fas fa-save"></i>Save Configuration</button>
+          <div style="display:flex;gap:10px">
+            <button class="btn" style="flex:1" onclick="saveUpdateSettings()"><i class="fas fa-save"></i>Save
+              Configuration</button>
+            <button class="btn orange" onclick="document.getElementById('exe-upload').click()"><i
+                class="fas fa-file-upload"></i>Upload New EXE</button>
+            <input type="file" id="exe-upload" style="display:none" accept=".exe" onchange="uploadExeUpdate(this)">
+          </div>
         </div>
         <p style="margin-top:15px;font-size:12px;color:var(--text2)">
           <i class="fas fa-info-circle"></i> When the Loader launches, it checks this version. If it's different from
           the local version, it will download the EXE from the URL above and self-update.
         </p>
 
-        <div class="section-title" style="margin-top:30px"><i class="fas fa-history"></i>Update History</div>
+        <div class="section-title"
+          style="margin-top:30px;display:flex;justify-content:space-between;align-items:center">
+          <span><i class="fas fa-history"></i>Update History</span>
+          <button class="btn red" style="padding:6px 12px;font-size:12px" onclick="clearUpdateHistory()"><i
+              class="fas fa-trash"></i>Clear History</button>
+        </div>
         <div class="table-container">
           <table>
             <thead>
@@ -1583,6 +1594,45 @@
           loadUpdateHistory();
         } else {
           toast('Failed to save settings', 'red');
+        }
+      }
+
+      async function uploadExeUpdate(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const ver = document.getElementById('upd-version').value.trim();
+
+        const formData = new FormData();
+        formData.append('exe', file);
+        formData.append('version', ver);
+
+        toast('Uploading executable...');
+        try {
+          const r = await fetch('/api/admin/update/upload', {
+            method: 'POST',
+            headers: { 'x-admin-token': TOKEN },
+            body: formData
+          });
+          const res = await r.json();
+          if (res.success) {
+            toast('Upload successful!');
+            loadUpdateSettings();
+            loadUpdateHistory();
+          } else {
+            toast(res.message || 'Upload failed', 'red');
+          }
+        } catch (e) {
+          toast('Error uploading file', 'red');
+        }
+        input.value = ''; // Reset input
+      }
+
+      async function clearUpdateHistory() {
+        if (!confirm('Are you sure you want to clear ALL update history?')) return;
+        const res = await api('GET', '/api/admin/update/history/clear');
+        if (res.success) {
+          toast('History cleared');
+          loadUpdateHistory();
         }
       }
 
