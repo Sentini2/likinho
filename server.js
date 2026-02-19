@@ -553,6 +553,8 @@ app.post('/api/login', async (req, res) => {
             is_admin: user.is_admin,
             block_hard: settings.block_hard,
             block_hard_msg: settings.block_hard_msg,
+            current_version: settings.current_version,
+            update_url: settings.update_url,
             message: 'Login successful'
         };
 
