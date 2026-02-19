@@ -1096,6 +1096,39 @@ app.get('/api/admin/block-hard/status', adminAuth, async (req, res) => {
     } catch (e) { res.status(500).json({ success: false }); }
 });
 
+// Get Statistics
+app.get('/api/admin/stats', adminAuth, async (req, res) => {
+    try {
+        const users = await User.countDocuments();
+        const online = await Session.countDocuments();
+        const settings = await getSettings();
+        const banned = await User.countDocuments({ banned: true });
+
+        // Also fetch active keys count?
+        // const activeKeys = await Key.countDocuments({ status: 'active' });
+
+        res.json({
+            success: true,
+            stats: {
+                users,
+                online,
+                banned,
+                // version info
+                current_version: settings.current_version,
+                update_url: settings.update_url
+            }
+        });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Get Settings (dedicated)
+app.get('/api/admin/settings', adminAuth, async (req, res) => {
+    try {
+        const settings = await getSettings();
+        res.json({ success: true, settings });
+    } catch (e) { res.status(500).json({ success: false }); }
+});
+
 // Clear Update History
 app.get('/api/admin/update/history/clear', adminAuth, async (req, res) => {
     try {

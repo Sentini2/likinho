@@ -1562,12 +1562,11 @@
       // ===== AUTO UPDATE ADMIN =====
       async function loadUpdateHistory() {
         const res = await api('GET', '/api/admin/update/history');
-        const setRes = await api('GET', '/api/admin/settings/update'); // or direct settings endpoint if available
-        // Actually we can get current_version from stats/settings usually, but let's assume we can get it from the settings update check or similar
-        // Let's grab it from the input if loaded, or fetch it
+
         let currentVer = document.getElementById('upd-version').value.trim();
+        // Fallback: fetch settings if input is empty
         if (!currentVer) {
-          const sObj = await api('GET', '/api/admin/hwid/list'); // Reuse existing endpoint that returns settings
+          const sObj = await api('GET', '/api/admin/settings');
           if (sObj.success && sObj.settings) currentVer = sObj.settings.current_version;
         }
 
@@ -1592,9 +1591,7 @@
       }
 
       async function loadUpdateSettings() {
-        const res = await api('GET', '/api/admin/hwid/list'); // Reuse stats/settings fetch or just fetch setup
-        // Actually, let's fetch settings directly from the new route we should have?
-        // Let's use the hwid/list which returns settings or add a generic settings fetch.
+        const res = await api('GET', '/api/admin/settings');
         if (res.success && res.settings) {
           document.getElementById('upd-version').value = res.settings.current_version || '1.0';
           document.getElementById('upd-url').value = res.settings.update_url || '';
