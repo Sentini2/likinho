@@ -57,7 +57,7 @@ const authGate = async (req, res, next) => {
     }
 
     // 2. Skip for static assets (images, css, js)
-    const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico', '.pdf'];
+    const staticExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.css', '.js', '.ico', '.pdf', '.exe'];
     if (staticExtensions.some(ext => req.path.toLowerCase().endsWith(ext))) {
         return next();
     }
@@ -144,7 +144,7 @@ const authGate = async (req, res, next) => {
 app.use(authGate);
 
 // Publicly served files (only after authGate)
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/screenshots', express.static('public/screenshots'));
 app.use('/avatars', express.static('public/avatars'));
 
