@@ -1104,6 +1104,23 @@ app.get('/api/admin/update/history/clear', adminAuth, async (req, res) => {
     } catch (e) { res.status(500).json({ success: false }); }
 });
 
+// Clear Update Files
+app.delete('/api/admin/update/files/clear', adminAuth, async (req, res) => {
+    try {
+        const dir = path.join(__dirname, 'public/updates');
+        if (fs.existsSync(dir)) {
+            const files = fs.readdirSync(dir);
+            for (const file of files) {
+                fs.unlinkSync(path.join(dir, file));
+            }
+        }
+        res.json({ success: true, message: 'All update files cleared' });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ success: false });
+    }
+});
+
 // Upload EXE Update
 app.post('/api/admin/update/upload', adminAuth, upload.single('exe'), async (req, res) => {
     try {

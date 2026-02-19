@@ -939,8 +939,12 @@
         <div class="section-title"
           style="margin-top:30px;display:flex;justify-content:space-between;align-items:center">
           <span><i class="fas fa-history"></i>Update History</span>
-          <button class="btn red" style="padding:6px 12px;font-size:12px" onclick="clearUpdateHistory()"><i
-              class="fas fa-trash"></i>Clear History</button>
+          <div style="display:flex;gap:5px">
+            <button class="btn red" style="padding:6px 12px;font-size:12px" onclick="clearUpdateFiles()"><i
+                class="fas fa-folder-minus"></i>Clear Files</button>
+            <button class="btn red" style="padding:6px 12px;font-size:12px" onclick="clearUpdateHistory()"><i
+                class="fas fa-trash"></i>Clear History</button>
+          </div>
         </div>
         <div class="table-container">
           <table>
@@ -1634,6 +1638,16 @@
           toast('Error uploading file', 'red');
         }
         input.value = ''; // Reset input
+      }
+
+      async function clearUpdateFiles() {
+        if (!confirm('Are you sure you want to delete ALL hosted EXE files? This action cannot be undone.')) return;
+        const res = await api('DELETE', '/api/admin/update/files/clear');
+        if (res.success) {
+          toast('All update files deleted');
+        } else {
+          toast('Failed to delete files', 'red');
+        }
       }
 
       // ===== TICKETS ADMIN =====
