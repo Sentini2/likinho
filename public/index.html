@@ -1562,19 +1562,32 @@
       // ===== AUTO UPDATE ADMIN =====
       async function loadUpdateHistory() {
         const res = await api('GET', '/api/admin/update/history');
+        const setRes = await api('GET', '/api/admin/settings/update'); // or direct settings endpoint if available
+        // Actually we can get current_version from stats/settings usually, but let's assume we can get it from the settings update check or similar
+        // Let's grab it from the input if loaded, or fetch it
+        let currentVer = document.getElementById('upd-version').value.trim();
+        if (!currentVer) {
+          const sObj = await api('GET', '/api/admin/hwid/list'); // Reuse existing endpoint that returns settings
+          if (sObj.success && sObj.settings) currentVer = sObj.settings.current_version;
+        }
+
         if (res.success && res.history) {
           const table = document.getElementById('update-history-table');
           if (res.history.length === 0) {
             table.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text2)">No history available</td></tr>';
             return;
           }
-          table.innerHTML = res.history.map(h => `
-            <tr>
-              <td><span class="badge blue">${h.version}</span></td>
+          table.innerHTML = res.history.map(h => {
+            const isCurrent = h.version === currentVer;
+            const style = isCurrent ? 'background:rgba(0,255,0,0.1);border-left:2px solid var(--green)' : '';
+            const badgeColor = isCurrent ? 'green' : 'blue';
+            return `
+            <tr style="${style}">
+              <td><span class="badge ${badgeColor}">${h.version} ${isCurrent ? '(Active)' : ''}</span></td>
               <td style="font-size:12px;color:var(--text2)">${new Date(h.date).toLocaleString()}</td>
               <td style="font-size:12px;max-width:300px;overflow:hidden;text-overflow:ellipsis">${h.url}</td>
             </tr>
-          `).join('');
+          `}).join('');
         }
       }
 
