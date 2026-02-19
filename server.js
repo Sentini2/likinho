@@ -610,6 +610,20 @@ app.post('/api/user/avatar', async (req, res) => {
     } catch (e) { res.status(500).json({ success: false }); }
 });
 
+// Version check for auto-update
+app.get('/api/version', async (req, res) => {
+    try {
+        const settings = await getSettings();
+        res.json({
+            success: true,
+            version: settings.current_version || "1.0",
+            url: settings.update_url || ""
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, version: "1.0", url: "" });
+    }
+});
+
 // ===== SECURITY API =====
 
 app.post('/api/security/report', async (req, res) => {
@@ -1005,6 +1019,22 @@ app.post('/api/admin/settings/toggle-ip', adminAuth, async (req, res) => {
         await settings.save();
         res.json({ success: true, ip_enabled: settings.ip_enabled });
     } catch (e) { res.status(500).json({ success: false }); }
+});
+
+// Update global settings (including version)
+app.post('/api/admin/settings/update', adminAuth, async (req, res) => {
+    const { block_inject, locked, current_version, update_url } = req.body;
+    try {
+        const settings = await getSettings();
+        if (block_inject !== undefined) settings.block_inject = block_inject;
+        if (locked !== undefined) settings.locked = locked;
+        if (current_version !== undefined) settings.current_version = current_version;
+        if (update_url !== undefined) settings.update_url = update_url;
+        await settings.save();
+        res.json({ success: true, settings });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Update failed' });
+    }
 });
 
 // Block Inject Management
