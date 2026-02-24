@@ -1,0 +1,16 @@
+.vs/
+ipch/
+*.ipch
+*.VC.db
+*.db
+*.opendb
+*.sdf
+Debug/
+Release/
+x64/
+x86/
+bin/
+obj/
+*.rar
+*.zip
+node_modules/
