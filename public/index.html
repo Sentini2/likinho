@@ -334,6 +334,12 @@
       color: #6b7280
     }
 
+    .badge.lifetime {
+      background: rgba(168, 85, 247, .18);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, .3)
+    }
+
     .badge.online {
       background: rgba(34, 197, 94, .15);
       color: var(--green)
@@ -609,6 +615,8 @@
           <label>Days:</label><input type="number" id="kg-days" value="30" min="1">
           <label>Count:</label><input type="number" id="kg-count" value="1" min="1" max="50">
           <button class="btn" onclick="generateKeys('kg')"><i class="fas fa-plus"></i>Generate</button>
+          <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#9f1af0)"
+            onclick="generateLifetimeKeys('kg')"><i class="fas fa-infinity"></i> Lifetime</button>
         </div>
         <div class="gen-keys-output" id="kg-output"></div>
       </div>
@@ -641,6 +649,8 @@
           <label>Days:</label><input type="number" id="km-days" value="30" min="1">
           <label>Count:</label><input type="number" id="km-count" value="1" min="1" max="50">
           <button class="btn" onclick="generateMenuKeys()"><i class="fas fa-plus"></i>Generate</button>
+          <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#9f1af0)"
+            onclick="generateLifetimeMenuKeys()"><i class="fas fa-infinity"></i> Lifetime</button>
         </div>
         <div class="gen-keys-output" id="km-output"></div>
       </div>
@@ -1227,9 +1237,9 @@
           return `<tr>
       <td><span class="key-code" onclick="navigator.clipboard.writeText('${k.key_code}');toast('Copied!')">${k.key_code}</span></td>
       <td><span class="badge ${k.status}">${k.status}</span></td>
-      <td>${k.days}d</td>
+      <td>${k.lifetime || k.days === 9999 ? '<span class="badge lifetime">&#8734; Lifetime</span>' : k.days + 'd'}</td>
       <td>${k.used_by || '-'}</td>
-      <td>${k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-'}</td>
+      <td>${k.lifetime ? '<span style="color:#c084fc">&#8734; Nunca</span>' : (k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-')}</td>
       <td>
         ${!isBanned ? `<button class="btn sm red" onclick="banKey('keys', ${k.id})"><i class="fas fa-ban"></i></button>` :
               `<button class="btn sm green" onclick="enableKey('keys', ${k.id})"><i class="fas fa-check"></i></button>`}
@@ -1257,6 +1267,19 @@
       async function deleteKey(type, id, key) { if (!confirm(`Delete key ${key}?`)) return; await api('DELETE', `/api/admin/${type}/${id}`); toast('Key deleted'); loadKeys(); loadMenuKeys(); }
 
       // ===== MENU KEYS =====
+      async function generateLifetimeKeys(prefix) {
+        const count = parseInt(document.getElementById(prefix + '-count').value) || 1;
+        const d = await api('POST', '/api/admin/keys/generate', { lifetime: true, count });
+        if (d.success) {
+          const out = document.getElementById(prefix + '-output');
+          out.style.display = 'block';
+          out.innerHTML = '<div style="color:#c084fc;font-size:11px;margin-bottom:6px">&#8734; LIFETIME KEYS</div>' +
+            d.keys.map(k => `<div class="key-code" onclick="navigator.clipboard.writeText('${k}');toast('Copied!')" style="border-color:#7c3aed">${k}</div>`).join('<br>');
+          toast(`${d.keys.length} lifetime key(s) generated!`);
+          loadKeys();
+        }
+      }
+
       async function generateMenuKeys() {
         const days = parseInt(document.getElementById('km-days').value) || 30;
         const count = parseInt(document.getElementById('km-count').value) || 1;
@@ -1266,6 +1289,19 @@
           out.style.display = 'block';
           out.innerHTML = d.keys.map(k => `<div class="key-code" onclick="navigator.clipboard.writeText('${k}');toast('Copied!')">${k}</div>`).join('<br>');
           toast(`${d.keys.length} menu key(s) generated!`);
+          loadMenuKeys();
+        }
+      }
+
+      async function generateLifetimeMenuKeys() {
+        const count = parseInt(document.getElementById('km-count').value) || 1;
+        const d = await api('POST', '/api/admin/menu-keys/generate', { lifetime: true, count });
+        if (d.success) {
+          const out = document.getElementById('km-output');
+          out.style.display = 'block';
+          out.innerHTML = '<div style="color:#c084fc;font-size:11px;margin-bottom:6px">&#8734; LIFETIME MENU KEYS</div>' +
+            d.keys.map(k => `<div class="key-code" onclick="navigator.clipboard.writeText('${k}');toast('Copied!')" style="border-color:#7c3aed">${k}</div>`).join('<br>');
+          toast(`${d.keys.length} lifetime menu key(s) generated!`);
           loadMenuKeys();
         }
       }
@@ -1282,9 +1318,9 @@
           return `<tr>
       <td><span class="key-code" onclick="navigator.clipboard.writeText('${k.key_code}');toast('Copied!')">${k.key_code}</span></td>
       <td><span class="badge ${k.status}">${k.status}</span></td>
-      <td>${k.days}d</td>
+      <td>${k.lifetime || k.days === 9999 ? '<span class="badge lifetime">&#8734; Lifetime</span>' : k.days + 'd'}</td>
       <td>${k.used_by || '-'}</td>
-      <td>${k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-'}</td>
+      <td>${k.lifetime ? '<span style="color:#c084fc">&#8734; Nunca</span>' : (k.expires_at ? new Date(k.expires_at).toLocaleDateString() : '-')}</td>
       <td>
         ${!isBanned ? `<button class="btn sm red" onclick="banKey('menu-keys', ${k.id})"><i class="fas fa-ban"></i></button>` :
               `<button class="btn sm green" onclick="enableKey('menu-keys', ${k.id})"><i class="fas fa-check"></i></button>`}

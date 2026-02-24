@@ -448,7 +448,8 @@ app.post('/api/login', async (req, res) => {
         if (key.status === 'paused') return res.json({ success: false, message: 'Your key is currently paused by admin' });
         if (key.status === 'blacklisted') return res.json({ success: false, message: 'Your key has been blacklisted' });
 
-        if (key.expires_at && new Date(key.expires_at) < new Date()) {
+        // Skip expiration check for lifetime keys
+        if (!key.lifetime && key.expires_at && new Date(key.expires_at) < new Date()) {
             key.status = 'expired';
             await key.save();
             return res.json({ success: false, message: 'Your key has expired' });
@@ -546,14 +547,20 @@ app.post('/api/login', async (req, res) => {
             ip: clientIP
         });
 
-        const daysLeft = key.expires_at ? Math.ceil((new Date(key.expires_at) - new Date()) / 86400000) : 0;
+        // Calculate days left (lifetime = -1)
+        const daysLeft = key.lifetime ? -1 : (key.expires_at ? Math.ceil((new Date(key.expires_at) - new Date()) / 86400000) : 0);
 
         // Check menu key status
         let menuKeyStatus = 'none';
         let menuKeyDays = 0;
+        let menuKeyLifetime = false;
         const menuKey = await MenuKey.findOne({ used_by: user.username });
         if (menuKey) {
-            if (menuKey.status === 'active' && menuKey.expires_at) {
+            if (menuKey.lifetime && menuKey.status === 'active') {
+                // Lifetime menu key — never expires
+                menuKeyDays = -1;
+                menuKeyLifetime = true;
+            } else if (menuKey.status === 'active' && menuKey.expires_at) {
                 if (new Date(menuKey.expires_at) < new Date()) {
                     menuKey.status = 'expired';
                     await menuKey.save();
@@ -571,8 +578,10 @@ app.post('/api/login', async (req, res) => {
             discord_avatar: user.discord_avatar,
             avatar_base64: user.avatar_base64 || "",
             days_left: daysLeft,
+            is_lifetime: key.lifetime || false,
             menu_key_status: menuKeyStatus,
             menu_key_days: menuKeyDays,
+            menu_key_lifetime: menuKeyLifetime,
             is_admin: user.is_admin,
             block_hard: settings.block_hard,
             block_hard_msg: settings.block_hard_msg,
@@ -774,8 +783,9 @@ app.get('/api/admin/keys', adminAuth, async (req, res) => {
 
 // Generate multiple keys
 app.post('/api/admin/keys/generate', adminAuth, async (req, res) => {
-    const { days, count } = req.body;
-    const keyDays = days || 30;
+    const { days, count, lifetime } = req.body;
+    const isLifetime = lifetime === true || lifetime === 'true';
+    const keyDays = isLifetime ? 9999 : (days || 30);
     const keyCount = Math.min(count || 1, 50);
     const newKeys = [];
 
@@ -792,12 +802,13 @@ app.post('/api/admin/keys/generate', adminAuth, async (req, res) => {
                 used_by: null,
                 created_at: now(),
                 activated_at: null,
-                expires_at: null
+                expires_at: null,
+                lifetime: isLifetime
             });
             await newKey.save();
             newKeys.push(keyCode);
         }
-        res.json({ success: true, message: `${keyCount} key(s) generated`, keys: newKeys });
+        res.json({ success: true, message: `${keyCount} key(s) generated`, keys: newKeys, lifetime: isLifetime });
     } catch (e) {
         res.status(500).json({ success: false, message: 'Generation failed' });
     }
@@ -805,8 +816,9 @@ app.post('/api/admin/keys/generate', adminAuth, async (req, res) => {
 
 // Generate menu keys
 app.post('/api/admin/menu-keys/generate', adminAuth, async (req, res) => {
-    const { days, count } = req.body;
-    const keyDays = days || 30;
+    const { days, count, lifetime } = req.body;
+    const isLifetime = lifetime === true || lifetime === 'true';
+    const keyDays = isLifetime ? 9999 : (days || 30);
     const keyCount = Math.min(count || 1, 50);
     const newKeys = [];
 
@@ -820,12 +832,13 @@ app.post('/api/admin/menu-keys/generate', adminAuth, async (req, res) => {
                 status: 'available',
                 used_by: null,
                 activated_at: null,
-                expires_at: null
+                expires_at: null,
+                lifetime: isLifetime
             });
             await newKey.save();
             newKeys.push(keyCode);
         }
-        res.json({ success: true, message: `${keyCount} menu key(s) generated`, keys: newKeys });
+        res.json({ success: true, message: `${keyCount} menu key(s) generated`, keys: newKeys, lifetime: isLifetime });
     } catch (e) {
         res.status(500).json({ success: false, message: 'Generation failed' });
     }
@@ -860,7 +873,11 @@ app.post('/api/menu-keys/redeem', async (req, res) => {
         // Check if user already has an active menu key
         const existingKey = await MenuKey.findOne({ used_by: username, status: 'active' });
         if (existingKey) {
-            if (new Date(existingKey.expires_at) > new Date()) {
+            // Lifetime keys are always active, block redemption
+            if (existingKey.lifetime) {
+                return res.json({ success: false, message: 'You already have an active lifetime menu subscription' });
+            }
+            if (existingKey.expires_at && new Date(existingKey.expires_at) > new Date()) {
                 return res.json({ success: false, message: 'You already have an active menu subscription' });
             }
         }
@@ -869,7 +886,10 @@ app.post('/api/menu-keys/redeem', async (req, res) => {
         if (!key) return res.json({ success: false, message: 'Invalid key' });
         if (key.status !== 'available') return res.json({ success: false, message: 'Key already used or invalid' });
 
-        const expiresAt = new Date(Date.now() + key.days * 86400000).toISOString();
+        let expiresAt = null;
+        if (!key.lifetime) {
+            expiresAt = new Date(Date.now() + key.days * 86400000).toISOString();
+        }
         key.status = 'active';
         key.used_by = username;
         key.activated_at = now();
@@ -878,8 +898,9 @@ app.post('/api/menu-keys/redeem', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Key redeemed successfully!',
-            days: key.days,
+            message: key.lifetime ? 'Lifetime key redeemed successfully!' : 'Key redeemed successfully!',
+            lifetime: key.lifetime || false,
+            days: key.lifetime ? 9999 : key.days,
             expires_at: expiresAt
         });
     } catch (e) {

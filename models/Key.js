@@ -15,7 +15,8 @@ const KeySchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now },
     activated_at: { type: Date, default: null },
     expires_at: { type: Date, default: null },
-    remaining_ms: { type: Number, default: null } // For paused keys
+    remaining_ms: { type: Number, default: null }, // For paused keys
+    lifetime: { type: Boolean, default: false } // Never expires
 });
 
 const MenuKeySchema = new mongoose.Schema({
@@ -29,7 +30,8 @@ const MenuKeySchema = new mongoose.Schema({
     },
     used_by: { type: String, default: null },
     activated_at: { type: Date, default: null },
-    expires_at: { type: Date, default: null }
+    expires_at: { type: Date, default: null },
+    lifetime: { type: Boolean, default: false } // Never expires
 });
 
 module.exports = {
