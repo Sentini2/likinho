@@ -14,3 +14,5 @@ obj/
 *.rar
 *.zip
 node_modules/
+**/*.env
+.env

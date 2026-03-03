@@ -23,8 +23,6 @@ const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
 const UpdateHistory = require('./models/UpdateHistory');
-const BotConfig = require('./models/BotConfig');
-const Product = require('./models/Product');
 // const WhitelistIP = require('./models/WhitelistIP'); // DELETED
 
 const app = express();

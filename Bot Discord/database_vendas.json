@@ -1,0 +1,22 @@
+{
+    "products": [
+        {
+            "id": "0ed091f1",
+            "name": "Likinho Menu",
+            "price": 0.01,
+            "mode": "AUTO",
+            "stock_items": [
+                "123",
+                "123",
+                "123",
+                "123",
+                "123"
+            ]
+        }
+    ],
+    "config": {
+        "prefix": "!",
+        "log_channel_id": "1478205241467076638",
+        "dm_template": "Obrigado pela compra!\\nAqui está o seu produto:\\n{produto}"
+    }
+}
