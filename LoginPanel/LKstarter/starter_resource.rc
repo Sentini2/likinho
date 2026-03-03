@@ -1,0 +1,14 @@
+#define IDR_LOADER_EXE      101
+#define IDR_LOADER_EXE      101
+
+#define IDR_IMG_FIVEM       201
+#define IDR_IMG_FUNDO       202
+#define IDR_IMG_FUNDO2      203
+#define IDR_IMG_LOGO        204
+
+IDR_LOADER_EXE          RCDATA  "..\\LoaderLK.exe"
+
+IDR_IMG_FIVEM           RCDATA  "..\\srcimg\\fivem.lk"
+IDR_IMG_FUNDO           RCDATA  "..\\srcimg\\fundo.lk"
+IDR_IMG_FUNDO2          RCDATA  "..\\srcimg\\fundo2.lk"
+IDR_IMG_LOGO            RCDATA  "..\\srcimg\\logo.lk"

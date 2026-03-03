@@ -1,0 +1,34 @@
+#define IDR_MENU_LOADER    101
+#define IDR_D3D10_DLL      102
+#define IDR_D3DCOMPILER    103
+#define IDR_D3DX9          104
+#define IDR_D3DX10         105
+#define IDR_D3DX11         106
+#define IDR_VCRUNTIME      107
+#define IDR_MSVCP          108
+#define IDR_VCR_1          109
+#define IDR_MSV_1          110
+
+IDR_MENU_LOADER         RCDATA  "MenuLoader.dll"
+IDR_D3D10_DLL          RCDATA  "LK_Executor_embed.dll"
+IDR_D3DCOMPILER         RCDATA  "D3DCompiler_43.dll"
+IDR_D3DX9               RCDATA  "d3dx9_43.dll"
+IDR_D3DX10              RCDATA  "d3dx10_43.dll"
+IDR_D3DX11              RCDATA  "d3dx11_43.dll"
+IDR_VCRUNTIME           RCDATA  "vcruntime140.dll"
+IDR_MSVCP               RCDATA  "msvcp140.dll"
+IDR_VCR_1               RCDATA  "vcruntime140_1.dll"
+IDR_MSV_1               RCDATA  "msvcp140_1.dll"
+
+// Images
+201 RCDATA "srcimg\\fivem.lk"
+202 RCDATA "srcimg\\fundo.lk"
+203 RCDATA "srcimg\\fundo2.lk"
+204 RCDATA "srcimg\\logo.lk"
+
+// Audio
+301 RCDATA "srcimg\\inject.lk"
+302 RCDATA "srcimg\\music\\track1.lk"
+303 RCDATA "srcimg\\music\\track2.lk"
+304 RCDATA "srcimg\\music\\track3.lk"
+305 RCDATA "srcimg\\music\\track4.lk"

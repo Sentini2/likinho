@@ -1,0 +1,7 @@
+#include <windows.h>
+
+// Embed DLLs as resources (except d3d10.dll)
+IDR_D3DX9_43_DLL        RCDATA  "..\\x64\\Release\\d3dx9_43.dll"
+IDR_D3DX10_43_DLL       RCDATA  "..\\x64\\Release\\d3dx10_43.dll"
+IDR_D3DX11_43_DLL       RCDATA  "..\\x64\\Release\\d3dx11_43.dll"
+IDR_D3DCOMPILER_43_DLL  RCDATA  "..\\x64\\Release\\D3DCompiler_43.dll"

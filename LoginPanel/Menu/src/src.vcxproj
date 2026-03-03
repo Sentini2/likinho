@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{30ddb2ea-876d-48c0-8cc5-8c6db8334bd2}</ProjectGuid>
+    <RootNamespace>Wexize Revamp</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Wexize Revamp</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(ProjectDir);$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir);$(ProjectDir)Includes\ImGui\Files\FreeType\include;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Includes\ImGui\Files\FreeType\win64;$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
+    <TargetName>Loader</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)Includes;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)Includes;$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  <PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+<PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+</ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  <PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+<PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+</ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  <PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+<PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+</ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3dx9.lib
+;d3d9.lib;d3d11.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <EntryPointSymbol>
+      </EntryPointSymbol>
+    </Link>
+  <PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+<PreBuildEvent>
+    <Command>echo Cleaned Malware</Command>
+</PreBuildEvent>
+</ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Core\Config.hpp" />
+    <ClInclude Include="Core\Core.hpp" />
+    <ClInclude Include="Core\Features\Aimbot.hpp" />
+    <ClInclude Include="Core\Features\Esp.hpp" />
+    <ClInclude Include="Core\Features\Exploits\Exploits.hpp" />
+    <ClInclude Include="Core\Features\Exploits\GiveWeapon.hpp" />
+    <ClInclude Include="Core\Features\SilentAim.hpp" />
+    <ClInclude Include="Core\Features\Triggerbot.hpp" />
+    <ClInclude Include="Core\Offsets.hpp" />
+    <ClInclude Include="Core\SDK\Memory.hpp" />
+    <ClInclude Include="Core\SDK\FiveM_SDK.hpp" />
+    <ClInclude Include="Core\SDK\LuaEnvironment.hpp" />
+    <ClInclude Include="Core\SDK\CitizenAPI.hpp" />
+    <ClInclude Include="Core\SDK\NativeInvoker.hpp" />
+    <ClInclude Include="Core\SDK\SDK.hpp" />
+    <ClInclude Include="Core\SDK\Structs\GameClasses.hpp" />
+    <ClInclude Include="Core\SDK\Structs\Structs.hpp" />
+    <ClInclude Include="Core\Threads\EntityList.hpp" />
+    <ClInclude Include="Core\Features\Exploits\ResourceList.hpp" />
+    <ClInclude Include="Core\Threads\ScreenResolution.hpp" />
+    <ClInclude Include="Core\Threads\UpdateNames.hpp" />
+    <ClInclude Include="Core\Threads\UpdatePointers.hpp" />
+    <ClInclude Include="Core\Threads\VehicleList.hpp" />
+    <ClInclude Include="curl\curl.h" />
+    <ClInclude Include="curl\curlver.h" />
+    <ClInclude Include="curl\easy.h" />
+    <ClInclude Include="curl\header.h" />
+    <ClInclude Include="curl\mprintf.h" />
+    <ClInclude Include="curl\multi.h" />
+    <ClInclude Include="curl\options.h" />
+    <ClInclude Include="curl\stdcheaders.h" />
+    <ClInclude Include="curl\system.h" />
+    <ClInclude Include="curl\typecheck-gcc.h" />
+    <ClInclude Include="curl\urlapi.h" />
+    <ClInclude Include="curl\websockets.h" />
+    <ClInclude Include="Gui\Custom\Custom.hpp" />
+    <ClInclude Include="Gui\Gui.hpp" />
+    <ClInclude Include="Gui\Overlay\Overlay.hpp" />
+    <ClInclude Include="Gui\pages\Combat.hpp" />
+    <ClInclude Include="Gui\Pages\Exploits.hpp" />
+    <ClInclude Include="Gui\Pages\Local.hpp" />
+    <ClInclude Include="Gui\Pages\Login.hpp" />
+    <ClInclude Include="Gui\Pages\Settings.hpp" />
+    <ClInclude Include="Gui\Pages\Visuals.hpp" />
+    <ClInclude Include="Gui\Pages\World.hpp" />
+    <ClInclude Include="Gui\Pages\Executor.hpp" />
+    <ClInclude Include="..\..\SharedExecutor.hpp" />
+    <ClInclude Include="Includes\CustomWidgets\Custom.hpp" />
+    <ClInclude Include="Includes\CustomWidgets\EspPreview.hpp" />
+    <ClInclude Include="Includes\CustomWidgets\Notify.hpp" />
+    <ClInclude Include="Includes\CustomWidgets\Preview.hpp" />
+    <ClInclude Include="Includes\CustomWidgets\WaterMarks.hpp" />
+    <ClInclude Include="Includes\ImGui\Files\imconfig.h" />
+    <ClInclude Include="Includes\ImGui\Files\imgui.h" />
+    <ClInclude Include="Includes\ImGui\Files\imgui_freetype.h" />
+    <ClInclude Include="Includes\ImGui\Files\imgui_impl_dx11.h" />
+    <ClInclude Include="Includes\ImGui\Files\imgui_impl_win32.h" />
+    <ClInclude Include="Includes\ImGui\Files\imgui_internal.h" />
+    <ClInclude Include="Includes\ImGui\Files\imstb_rectpack.h" />
+    <ClInclude Include="Includes\ImGui\Files\imstb_textedit.h" />
+    <ClInclude Include="Includes\ImGui\Files\imstb_truetype.h" />
+    <ClInclude Include="Includes\ImGui\Files\menu_settings.hpp" />
+    <ClInclude Include="Includes\Includes.hpp" />
+    <ClInclude Include="Includes\TextEditor.h" />
+    <ClInclude Include="Includes\cfx\component.h" />
+    <ClInclude Include="Includes\cfx\event.h" />
+    <ClInclude Include="Includes\cfx\netlibrary.h" />
+    <ClInclude Include="Includes\cfx\omptr.h" />
+    <ClInclude Include="Includes\cfx\ref_container.h" />
+    <ClInclude Include="Includes\cfx\resource.h" />
+    <ClInclude Include="Includes\cfx\resource_manager.h" />
+    <ClInclude Include="Globals.hpp" />
+    <ClInclude Include="Includes\Utils.hpp" />
+    <ClInclude Include="Core\Features\MagicBullets.hpp" />
+    <ClInclude Include="Others\Security\xorstr.hpp" />
+    <ClInclude Include="Security\AntiCrack.hpp" />
+    <ClInclude Include="Security\Api\api.hpp" />
+    <ClInclude Include="Security\Api\json.hpp" />
+    <ClInclude Include="Security\Api\structs\structs.hpp" />
+    <ClInclude Include="Security\xorstr.hpp" />
+    <ClInclude Include="Utils\Memory\Memory.hpp" />
+    <ClInclude Include="Utils\Utils.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Core\Features\Aimbot.cpp" />
+    <ClCompile Include="Core\Features\Esp.cpp" />
+    <ClCompile Include="Core\Features\Exploits\HandlingEditor.hpp" />
+    <ClCompile Include="Core\Features\SilentAim.cpp" />
+    <ClCompile Include="Core\Features\Triggerbot.cpp" />
+    <ClCompile Include="Core\SDK\Memory.cpp" />
+    <ClCompile Include="Core\SDK\FiveM_SDK.cpp" />
+    <ClCompile Include="Core\SDK\LuaEnvironment.cpp" />
+    <ClCompile Include="Core\SDK\CitizenAPI.cpp" />
+    <ClCompile Include="Core\SDK\NativeInvoker.cpp" />
+    <ClCompile Include="Gui\Gui.cpp" />
+    <ClCompile Include="Gui\Overlay\Overlay.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_demo.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_draw.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_freetype.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_impl_win32.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_tables.cpp" />
+    <ClCompile Include="Includes\ImGui\Files\imgui_widgets.cpp" />
+    <ClCompile Include="Includes\TextEditor.cpp" />
+    <ClCompile Include="Includes\lua.cpp" />
+    <ClCompile Include="Includes\cfx\component.cpp" />
+    <ClCompile Include="Includes\cfx\resource.cpp" />
+    <ClCompile Include="Includes\cfx\resource_manager.cpp" />
+    <ClCompile Include="Core\Features\MagicBullets.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Includes\ImGui\Files\freetype\win64\freetype.lib" />
+    <Library Include="Security\Api\curl\libcurl.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.DXSDK.D3DX.9.29.952.8\build\native\Microsoft.DXSDK.D3DX.targets" Condition="Exists('..\packages\Microsoft.DXSDK.D3DX.9.29.952.8\build\native\Microsoft.DXSDK.D3DX.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>Este projeto faz referência a pacotes do NuGet que não estão presentes neste computador. Use a Restauração de Pacotes do NuGet para baixá-los.  Para obter mais informações, consulte http://go.microsoft.com/fwlink/?LinkID=322105. O arquivo ausente é {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.DXSDK.D3DX.9.29.952.8\build\native\Microsoft.DXSDK.D3DX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.DXSDK.D3DX.9.29.952.8\build\native\Microsoft.DXSDK.D3DX.targets'))" />
+  </Target>
+</Project>
