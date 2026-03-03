@@ -23,6 +23,7 @@ const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
 const UpdateHistory = require('./models/UpdateHistory');
+const BotConfig = require('./models/BotConfig');
 const Product = require('./models/Product');
 // const WhitelistIP = require('./models/WhitelistIP'); // DELETED
 
@@ -783,6 +784,40 @@ app.get('/api/admin/keys', adminAuth, async (req, res) => {
     res.json({ success: true, keys });
 });
 
+// ===== ADMIN BOTCONFIG =====
+app.get('/api/admin/botconfig', adminAuth, async (req, res) => {
+    try {
+        let config = await BotConfig.findOne({ id: 1 });
+        if (!config) {
+            config = new BotConfig({ id: 1 });
+            await config.save();
+        }
+        res.json({ success: true, config });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'BotConfig error' });
+    }
+});
+
+app.post('/api/admin/botconfig', adminAuth, async (req, res) => {
+    const { bot_token, prefix, sales_channel_id, log_channel_id, dm_message_template, embed_color } = req.body;
+    try {
+        let config = await BotConfig.findOne({ id: 1 });
+        if (!config) config = new BotConfig({ id: 1 });
+
+        config.bot_token = bot_token || '';
+        config.prefix = prefix || '!';
+        config.sales_channel_id = sales_channel_id || '';
+        config.log_channel_id = log_channel_id || '';
+        config.dm_message_template = dm_message_template || 'Obrigado pela compra!\\nAqui está o seu produto:\\n{produto}';
+        config.embed_color = embed_color || '#00ff33';
+
+        await config.save();
+        res.json({ success: true, config });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to update BotConfig' });
+    }
+});
+
 // ===== ADMIN PRODUCTS =====
 app.get('/api/admin/products', adminAuth, async (req, res) => {
     try {
@@ -794,14 +829,15 @@ app.get('/api/admin/products', adminAuth, async (req, res) => {
 });
 
 app.post('/api/admin/products', adminAuth, async (req, res) => {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock_items } = req.body;
     try {
+        const items = Array.isArray(stock_items) ? stock_items : [];
         const product = new Product({
             id: await getNextId(Product),
             name,
             description: description || '',
             price: parseFloat(price) || 0,
-            stock: parseInt(stock) || 0,
+            stock_items: items,
             created_at: now()
         });
         await product.save();
@@ -812,11 +848,12 @@ app.post('/api/admin/products', adminAuth, async (req, res) => {
 });
 
 app.put('/api/admin/products/:id', adminAuth, async (req, res) => {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock_items } = req.body;
     try {
+        const items = Array.isArray(stock_items) ? stock_items : [];
         const product = await Product.findOneAndUpdate(
             { id: parseInt(req.params.id) },
-            { name, description, price: parseFloat(price) || 0, stock: parseInt(stock) || 0 },
+            { name, description, price: parseFloat(price) || 0, stock_items: items },
             { new: true }
         );
         if (!product) return res.json({ success: false, message: 'Product not found' });
@@ -837,13 +874,13 @@ app.delete('/api/admin/products/:id', adminAuth, async (req, res) => {
 
 app.post('/api/admin/products/:id/reduce', adminAuth, async (req, res) => {
     try {
-        const product = await Product.findOneAndUpdate(
-            { id: parseInt(req.params.id), stock: { $gt: 0 } },
-            { $inc: { stock: -1 } },
-            { new: true }
-        );
-        if (!product) return res.json({ success: false, message: 'Sem estoque' });
-        res.json({ success: true, product });
+        const product = await Product.findOne({ id: parseInt(req.params.id) });
+        if (!product || product.stock_items.length === 0) return res.json({ success: false, message: 'Sem estoque' });
+
+        const removedItem = product.stock_items.shift();
+        await product.save();
+
+        res.json({ success: true, product, removed_item: removedItem });
     } catch (e) {
         res.status(500).json({ success: false, message: 'Stock error' });
     }

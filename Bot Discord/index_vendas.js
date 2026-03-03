@@ -29,7 +29,25 @@ const STAFF_ROLE_ID = process.env.STAFF_ROLE_ID || '';
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
 
 const API_URL = 'https://sentini555.onrender.com/api/admin/products';
+const API_CFG = 'https://sentini555.onrender.com/api/admin/botconfig';
 const ADMIN_TOKEN = 'likinho-admin-2024';
+
+let botConfigCache = {
+    bot_token: process.env.DISCORD_TOKEN_VENDAS,
+    prefix: '!',
+    sales_channel_id: '',
+    log_channel_id: '1478205241467076638',
+    dm_message_template: 'Obrigado pela compra!\\nAqui está o seu produto:\\n{produto}',
+    embed_color: '#7c3aed'
+};
+
+setInterval(async () => {
+    try {
+        const res = await fetch(API_CFG, { headers: { 'x-admin-token': ADMIN_TOKEN } });
+        const data = await res.json();
+        if (data.success && data.config) botConfigCache = { ...botConfigCache, ...data.config };
+    } catch (e) { }
+}, 30000);
 
 async function getCatalogo() {
     try {
@@ -53,7 +71,13 @@ async function reduceStock(id) {
 
 const userCooldowns = new Map();
 
-client.once('ready', () => {
+client.once('ready', async () => {
+    try {
+        const res = await fetch(API_CFG, { headers: { 'x-admin-token': ADMIN_TOKEN } });
+        const data = await res.json();
+        if (data.success && data.config) botConfigCache = { ...botConfigCache, ...data.config };
+    } catch (e) { }
+
     console.log(`[SUB-BOT VENDAS] Online e operante como ${client.user.tag}!`);
     console.log(`Link de Convite do Sub-Bot de Vendas: https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot`);
 });
@@ -61,7 +85,7 @@ client.once('ready', () => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
-    if (message.content.toLowerCase() === '!painelvendas' && message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    if (message.content.toLowerCase() === `${botConfigCache.prefix}painelvendas` && message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         const catalogo = await getCatalogo();
 
         if (catalogo.length === 0) {
@@ -72,13 +96,16 @@ client.on('messageCreate', async (message) => {
             .setTitle('🛒 LK Store - Loja Automática')
             .setDescription('Escolha abaixo o produto que deseja adquirir. O Bot irá gerar um Checkout Pix automatizado e seguro usando a API do **Mercado Pago** para você pagar via **QR Code** ou **Copia e Cola**.')
             .setImage('https://i.imgur.com/KzS632U.png')
-            .setColor('#7c3aed');
+            .setColor(botConfigCache.embed_color || '#7c3aed');
 
-        const options = catalogo.map(p => ({
-            label: `🛒 ${p.name.toUpperCase()}`,
-            description: `💸 | Valor: R$${p.price.toFixed(2)} - 📦 | Estoque: ${p.stock}`,
-            value: p.id.toString()
-        }));
+        const options = catalogo.map(p => {
+            const qty = p.stock_items ? p.stock_items.length : 0;
+            return {
+                label: `🛒 ${p.name.toUpperCase()}`,
+                description: `💸 | Valor: R$${p.price.toFixed(2)} - 📦 | Estoque: ${qty}`,
+                value: p.id.toString()
+            };
+        });
 
         const rowVendas = new ActionRowBuilder()
             .addComponents(
@@ -103,7 +130,8 @@ client.on('interactionCreate', async (interaction) => {
         if (!produto) {
             return interaction.reply({ content: '❌ Produto não encontrado ou esgotado.', ephemeral: true });
         }
-        if (produto.stock <= 0) {
+        const qty = produto.stock_items ? produto.stock_items.length : 0;
+        if (qty <= 0) {
             return interaction.reply({ content: '❌ Este produto está esgotado no estoque.', ephemeral: true });
         }
 
@@ -194,7 +222,8 @@ client.on('interactionCreate', async (interaction) => {
         const produto = await getProduto(produtoID);
 
         if (!produto) return;
-        if (produto.stock <= 0) {
+        const qty = produto.stock_items ? produto.stock_items.length : 0;
+        if (qty <= 0) {
             return interaction.reply({ content: '❌ Ocorreu uma venda no mesmo segundo e o estoque esgotou.', ephemeral: true });
         }
 
@@ -277,16 +306,20 @@ client.on('interactionCreate', async (interaction) => {
                         clearInterval(intervalCheck);
 
                         // REDUZ O ESTOQUE NO BANCO DE DADOS KEYAUTH REST!
-                        await reduceStock(produtoID);
+                        const reduceRes = await reduceStock(produtoID);
+                        const itemEntregue = reduceRes.success && reduceRes.removed_item ? reduceRes.removed_item : 'ERRO: Sem estoque para entregar! Contacte um administrador.';
 
                         const ticketChannel = interaction.channel;
                         const comprador = interaction.user;
 
+                        let dmText = botConfigCache.dm_message_template || 'Obrigado pela compra!\\nAqui está o seu produto:\\n{produto}';
+                        dmText = dmText.replace(/\\\\n/g, '\\n').replace('{produto}', itemEntregue);
+
                         // Emitir mensagem de Aprovação na DM DO USUÁRIO
                         const embedDmAprovada = new EmbedBuilder()
-                            .setTitle('✅ PAGAMENTO APROVADO NA LK STORE!')
-                            .setDescription(`YAY! Recebemos seu pagamento do produto **${produto.name}**!\n\n**SEU CÓDIGO DE COMPRA:** \`${codigoCompra}\`\n\n➡️ **Instruções:** Acesse o painel principal do Discord e abra um **Ticket** solicitando o comando de \`Resgatar Produtos\`. Envie o seu Código de Compra lá dentro para um Admin gerar e te entregar a sua License Key!`)
-                            .setColor('#00ff33')
+                            .setTitle('✅ COMPRA ENTREGUE!')
+                            .setDescription(`YAY! Recebemos seu pagamento do produto **${produto.name}**!\\n\\n**SEU CÓDIGO DA COMPRA:** \`${codigoCompra}\`\\n\\n**➡️ SEU PRODUTO ENCONTRA-SE ABAIXO:**\\n\`\`\`\\n${itemEntregue}\\n\`\`\`\\n\\n${dmText}`)
+                            .setColor(botConfigCache.embed_color || '#00ff33')
                             .setFooter({ text: 'Recomendamos salvar o código acima.' })
                             .setTimestamp();
 
@@ -296,9 +329,9 @@ client.on('interactionCreate', async (interaction) => {
                             console.log(`Não foi possível enviar DM para ${comprador.tag}`);
                         }
 
-                        // ==== ENVIAR LOG PARA A SALA DOS ADMINS (1478205241467076638) ====
+                        // ==== ENVIAR LOG PARA A SALA DOS ADMINS ====
                         try {
-                            const adminLogs = interaction.client.channels.cache.get('1478205241467076638');
+                            const adminLogs = interaction.client.channels.cache.get(botConfigCache.log_channel_id || '1478205241467076638');
                             if (adminLogs) {
                                 const logVenda = new EmbedBuilder()
                                     .setTitle('💰 Nova Venda Automática (Aprovada)')
