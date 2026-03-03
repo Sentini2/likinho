@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Bot - Vendas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0b0f;
+            --card: #12131a;
+            --card2: #181922;
+            --accent: #7c3aed;
+            /* Purple for bot theme */
+            --accent2: #9f1af0;
+            --text: #e8e8e8;
+            --text2: #8a8a9a;
+            --green: #22c55e;
+            --red: #ef4444;
+            --border: #222233;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Login Gate */
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .login-box h1 {
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-size: 22px;
+        }
+
+        .login-box label {
+            display: block;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            background: var(--card2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: #fff;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .login-box input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.2s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+        }
+
+        /* Main Dashboard */
+        #app {
+            display: none;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 i {
+            color: var(--accent);
+            margin-right: 10px;
+        }
+
+        .logout-btn {
+            background: #333;
+            width: auto;
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text);
+        }
+
+        .section-title i {
+            color: var(--accent);
+        }
+
+        .gen-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .gen-row input,
+        .gen-row select {
+            background: var(--card2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .gen-row input:focus {
+            border-color: var(--accent);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text2);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            width: auto;
+            display: inline-flex;
+            border-radius: 6px;
+        }
+
+        .btn-red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--card2);
+            border: 1px solid var(--accent);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1><i class="fas fa-robot"></i> Bot Vendas</h1>
+            <p style="color:var(--text2);font-size:13px;margin-bottom:20px;">Acesso restrito ao catálogo de produtos do
+                bot do Discord.</p>
+            <label>Token de Administrador</label>
+            <input type="password" id="adminToken" placeholder="Digite a chave da API...">
+            <button class="btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> Acessar Painel</button>
+        </div>
+    </div>
+
+    <!-- PANEL -->
+    <div id="app">
+        <div class="header">
+            <h1><i class="fas fa-shopping-cart"></i> Gerenciar Produtos</h1>
+            <button class="btn logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><i class="fas fa-plus"></i> Adicionar Produto</div>
+            <div class="gen-row">
+                <input type="text" id="p_name" placeholder="Nome do Produto" style="flex:2;">
+                <input type="text" id="p_desc" placeholder="Descrição (Opcional)" style="flex:2;">
+                <input type="number" id="p_price" placeholder="Valor (Ex: 0.52)" step="0.01" style="flex:1;">
+                <input type="number" id="p_stock" placeholder="Estoque Inicial" style="flex:1;">
+                <button class="btn btn-sm btn-green" onclick="createProduct()" style="flex:1;"><i
+                        class="fas fa-save"></i> Criar</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title"><i class="fas fa-box-open"></i> Catálogo do Bot</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+                        <th>Valor (R$)</th>
+                        <th>Estoque</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="products-tbody">
+                    <!-- Products will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"><i class="fas fa-check-circle" style="color:var(--green)"></i><span
+            id="toast-msg">Sucesso!</span></div>
+
+    <script>
+        const API_URL = '/api/admin/products';
+        let token = localStorage.getItem('bot_admin_token') || '';
+
+        if (token) {
+            loadProducts(token);
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.querySelector('i').className = isError ? 'fas fa-times-circle' : 'fas fa-check-circle';
+            toast.querySelector('i').style.color = isError ? 'var(--red)' : 'var(--green)';
+            toast.style.borderColor = isError ? 'var(--red)' : 'var(--accent)';
+            toast.style.display = 'flex';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        async function login() {
+            const val = document.getElementById('adminToken').value;
+            if (!val) return;
+            token = val;
+            await loadProducts(token);
+        }
+
+        function logout() {
+            localStorage.removeItem('bot_admin_token');
+            token = '';
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
+
+        async function loadProducts(t) {
+            try {
+                const res = await fetch(API_URL, { headers: { 'x-admin-token': t } });
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('bot_admin_token', t);
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app').style.display = 'block';
+                    renderTable(data.products);
+                } else {
+                    showToast('Token inválido ou não autorizado', true);
+                    localStorage.removeItem('bot_admin_token');
+                }
+            } catch (e) {
+                showToast('Erro de conexão ao carregar produtos', true);
+            }
+        }
+
+        function renderTable(products) {
+            const tbody = document.getElementById('products-tbody');
+            tbody.innerHTML = '';
+
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+          <td>#${p.id}</td>
+          <td><strong>${p.name}</strong></td>
+          <td>${p.description || '-'}</td>
+          <td style="color:var(--green);font-weight:600;">R$ ${p.price.toFixed(2)}</td>
+          <td>
+            <input type="number" value="${p.stock}" id="stock_${p.id}" style="width:70px;padding:4px;margin-right:5px;background:transparent;border:1px solid #333;color:#fff;">
+          </td>
+          <td>
+            <button class="btn btn-sm btn-green" onclick="updateProduct(${p.id}, '${p.name}', '${p.description}', ${p.price})" style="margin-right:5px;"><i class="fas fa-sync"></i></button>
+            <button class="btn btn-sm btn-red" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+          </td>
+        `;
+                tbody.appendChild(tr);
+            });
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text2)">Nenhum produto cadastrado no catálogo.</td></tr>';
+            }
+        }
+
+        async function createProduct() {
+            const name = document.getElementById('p_name').value;
+            const desc = document.getElementById('p_desc').value;
+            const price = document.getElementById('p_price').value;
+            const stock = document.getElementById('p_stock').value;
+
+            if (!name || !price || !stock) return showToast('Preencha Nome, Valor e Estoque!', true);
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+                    body: JSON.stringify({ name, description: desc, price, stock })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Produto adicionado ao catálogo!');
+                    loadProducts(token);
+                    // Clear form
+                    document.getElementById('p_name').value = '';
+                    document.getElementById('p_desc').value = '';
+                    document.getElementById('p_price').value = '';
+                    document.getElementById('p_stock').value = '';
+                } else showToast(data.message, true);
+            } catch (e) { showToast('Erro internerno', true); }
+        }
+
+        async function updateProduct(id, name, desc, price) {
+            const stockEl = document.getElementById(`stock_${id}`);
+            const newStock = stockEl.value;
+
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+                    body: JSON.stringify({ name, description: desc, price, stock: newStock })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Estoque atualizado!');
+                    loadProducts(token);
+                } else showToast(data.message, true);
+            } catch (e) { showToast('Erro interno', true); }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Tem certeza que deseja apagar este produto do Bot?')) return;
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'x-admin-token': token }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Produto excluído!');
+                    loadProducts(token);
+                } else showToast(data.message, true);
+            } catch (e) { showToast('Erro interno', true); }
+        }
+    </script>
+</body>
+
+</html>

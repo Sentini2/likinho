@@ -23,6 +23,7 @@ const Setting = require('./models/Setting');
 const Message = require('./models/Message');
 const Ticket = require('./models/Ticket');
 const UpdateHistory = require('./models/UpdateHistory');
+const Product = require('./models/Product');
 // const WhitelistIP = require('./models/WhitelistIP'); // DELETED
 
 const app = express();
@@ -145,6 +146,7 @@ app.use(authGate);
 
 // Publicly served files (only after authGate)
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/bot', (req, res) => res.sendFile(path.join(__dirname, 'public/bot.html')));
 app.use('/screenshots', express.static('public/screenshots'));
 app.use('/avatars', express.static('public/avatars'));
 
@@ -779,6 +781,72 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
 app.get('/api/admin/keys', adminAuth, async (req, res) => {
     const keys = await Key.find().sort({ created_at: -1 });
     res.json({ success: true, keys });
+});
+
+// ===== ADMIN PRODUCTS =====
+app.get('/api/admin/products', adminAuth, async (req, res) => {
+    try {
+        const products = await Product.find().sort({ id: 1 });
+        res.json({ success: true, products });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Products error' });
+    }
+});
+
+app.post('/api/admin/products', adminAuth, async (req, res) => {
+    const { name, description, price, stock } = req.body;
+    try {
+        const product = new Product({
+            id: await getNextId(Product),
+            name,
+            description: description || '',
+            price: parseFloat(price) || 0,
+            stock: parseInt(stock) || 0,
+            created_at: now()
+        });
+        await product.save();
+        res.json({ success: true, product });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to create product' });
+    }
+});
+
+app.put('/api/admin/products/:id', adminAuth, async (req, res) => {
+    const { name, description, price, stock } = req.body;
+    try {
+        const product = await Product.findOneAndUpdate(
+            { id: parseInt(req.params.id) },
+            { name, description, price: parseFloat(price) || 0, stock: parseInt(stock) || 0 },
+            { new: true }
+        );
+        if (!product) return res.json({ success: false, message: 'Product not found' });
+        res.json({ success: true, product });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to update' });
+    }
+});
+
+app.delete('/api/admin/products/:id', adminAuth, async (req, res) => {
+    try {
+        await Product.deleteOne({ id: parseInt(req.params.id) });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Failed to delete' });
+    }
+});
+
+app.post('/api/admin/products/:id/reduce', adminAuth, async (req, res) => {
+    try {
+        const product = await Product.findOneAndUpdate(
+            { id: parseInt(req.params.id), stock: { $gt: 0 } },
+            { $inc: { stock: -1 } },
+            { new: true }
+        );
+        if (!product) return res.json({ success: false, message: 'Sem estoque' });
+        res.json({ success: true, product });
+    } catch (e) {
+        res.status(500).json({ success: false, message: 'Stock error' });
+    }
 });
 
 // Generate multiple keys
